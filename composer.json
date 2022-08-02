@@ -1,0 +1,61 @@
+{
+    "name": "swew/db",
+    "type": "library",
+    "description": "Migration tool",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "AVIL13",
+            "email": "avil@swew.app"
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "8.1"
+        },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Swew\\Db\\": "src/"
+        },
+        "files": [
+        ],
+        "exclude-from-classmap": [
+            "spec",
+            "/Tests/",
+            "/test/",
+            "/tests/"
+        ]
+    },
+    "autoload-dev": {
+        "files": [
+            "src/dd.php"
+        ],
+        "psr-4": {
+            "Swew\\Testing\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "swew/dd": "^1.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "phpstan/phpstan": "^1.8",
+        "swew/test": "^1.0",
+        "vimeo/psalm": "^4.24"
+    },
+    "scripts": {
+        "test": "t",
+        "static": "./vendor/bin/psalm --no-cache",
+        "stan": "vendor/bin/phpstan analyse src",
+        "code-check": "./vendor/bin/pint",
+        "check": [
+            "@static",
+            "@stan",
+            "@code-check"
+        ]
+    }
+}
