@@ -15,7 +15,7 @@ Simplest Migration and SqlModel tool
 use Swew/Db/{Migrate,Migrator};
 
 Migrate::up(function (Migrator $table) {
-    $table->createTable('users');
+    $table->tableCreate('users');
     $table->id();
     $table->string('name')->unique();
     $table->string('login', 64)->unique()->index();
@@ -26,7 +26,7 @@ Migrate::up(function (Migrator $table) {
 });
 
 Migrate::down(function (Migrator $table) {
-    $table->dropTable('users');
+    $table->tableDrop('users');
 });
 ```
 

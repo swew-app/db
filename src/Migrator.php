@@ -11,9 +11,11 @@ final class Migrator
 {
     private string $table = '';
 
+    private string $tableForDrop = '';
+
     private array $sqlLines = [];
 
-    private string $createTablePrefix = '';
+    private string $queryTablePrefix = '';
 
     public function __construct(readonly string $type = 'mysql')
     {
@@ -21,6 +23,10 @@ final class Migrator
 
     private function addLine(string|MigrationColumn $column, string $prefix = '  '): void
     {
+        if (! empty($this->tableForDrop)) {
+            throw new LogicException('You cannot delete and create tables at the same time');
+        }
+
         if (is_string($column)) {
             $this->sqlLines[] = $prefix.$column;
         } else {
@@ -43,23 +49,37 @@ final class Migrator
         $columns = implode(",\n", $lines);
 
         $sqlLines = [
-            $this->createTablePrefix,
+            $this->queryTablePrefix,
             $columns,
-            ')',
         ];
 
-        return implode("\n", $sqlLines);
+        if (str_contains($this->queryTablePrefix, '(')) {
+            $sqlLines[] = ')';
+        }
+
+        return trim(implode("\n", $sqlLines));
     }
 
     // table
 
-    public function createTable(string $tableName): self
+    public function tableCreate(string $tableName): self
     {
         if (! empty($this->table)) {
             throw new LogicException("The table '$tableName' is already set");
         }
 
-        $this->createTablePrefix = "CREATE TABLE IF NOT EXISTS `$tableName` (";
+        $this->queryTablePrefix = "CREATE TABLE IF NOT EXISTS `$tableName` (";
+
+        return $this;
+    }
+
+    public function tableDrop(string $tableName): self
+    {
+        if (! empty($this->tableName)) {
+            throw new LogicException("The table '$tableName' is already set");
+        }
+
+        $this->queryTablePrefix = "DROP TABLE `$tableName`";
 
         return $this;
     }
