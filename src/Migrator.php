@@ -97,6 +97,17 @@ final class Migrator
         $this->addLine($idSql);
     }
 
+    public function int(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $column->setType("INT");
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
     public function char(string $name, int $length = 1): MigrationColumn
     {
         $column = new MigrationColumn($name);
@@ -119,66 +130,3 @@ final class Migrator
         return $column;
     }
 }
-
-//bigIncrements
-//bigInteger
-//binary
-//boolean
-//char
-//dateTimeTz
-//dateTime
-//date
-//decimal
-//double
-//enum
-//float
-//foreignId
-//foreignIdFor
-//foreignUuid
-//geometryCollection
-//geometry
-//id
-//increments
-//integer
-//ipAddress
-//json
-//jsonb
-//lineString
-//longText
-//macAddress
-//mediumIncrements
-//mediumInteger
-//mediumText
-//morphs
-//multiLineString
-//multiPoint
-//multiPolygon
-//nullableMorphs
-//nullableTimestamps
-//nullableUuidMorphs
-//point
-//polygon
-//rememberToken
-//set
-//smallIncrements
-//smallInteger
-//softDeletesTz
-//softDeletes
-//string
-//text
-//timeTz
-//time
-//timestampTz
-//timestamp
-//timestampsTz
-//timestamps
-//tinyIncrements
-//tinyInteger
-//tinyText
-//unsignedBigInteger
-//unsignedDecimal
-//unsignedInteger
-//unsignedMediumInteger
-//unsignedSmallInteger
-//unsignedTinyInteger
-//year

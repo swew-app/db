@@ -1,0 +1,75 @@
+
+
+TECHNICAL:
+    - id
+    timestamp (created_at, updated_at)
+    softDeletesTz
+    softDeletes
+
+NUMBER:
+    bigIncrements
+    bigInteger
+    decimal
+    double
+    float
+    integer
+    mediumInteger
+    tinyInteger
+    unsignedBigInteger
+    unsignedDecimal
+    unsignedInteger
+    unsignedMediumInteger
+    unsignedSmallInteger
+    unsignedTinyInteger
+
+TEXT:
+    longText
+    mediumText
+    multiLineString
+    string
+    text
+    tinyText
+
+DATE:
+    dateTimeTz
+    dateTime
+    date
+    timeTz
+    time
+    timestampTz
+    timestamp
+    timestampsTz
+    timestamps
+    year
+
+OTHER:
+    binary
+    boolean
+    char
+    enum
+    foreignId
+    foreignIdFor
+    foreignUuid
+    geometryCollection
+    geometry
+    increments
+    ipAddress
+    json
+    jsonb
+    lineString
+    macAddress
+    mediumIncrements
+    morphs
+    multiPoint
+    multiPolygon
+    nullableMorphs
+    nullableTimestamps
+    nullableUuidMorphs
+    point
+    polygon
+    rememberToken
+    set
+    smallIncrements
+    smallInteger
+    ? tinyIncrements
+

@@ -12,13 +12,15 @@ it('Migrator [user table]', function () {
     $table->string('name')->unique();
     $table->string('login', 64)->unique()->index();
     $table->string('password', 64)->default('p@$$');
+    $table->int('rating')->nullable();
 
     $expected = <<<'PHP_TEXT'
 CREATE TABLE IF NOT EXISTS `users` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(255) UNIQUE NOT NULL,
   `login` VARCHAR(64) UNIQUE NOT NULL,
-  `password` VARCHAR(64) DEFAULT('p@$$') NOT NULL
+  `password` VARCHAR(64) DEFAULT('p@$$') NOT NULL,
+  `rating` INT
 )
 PHP_TEXT;
 
