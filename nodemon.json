@@ -1,0 +1,7 @@
+{
+  "ignore": ["vendor"],
+  "watch": ["src", "tests"],
+  "exec": "composer test",
+  "ext": "php,json",
+  "delay": 1000
+}

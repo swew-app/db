@@ -1,0 +1,15 @@
+{
+    "preloadFile": "",
+    "paths": [
+        "**/*.spec.php",
+        "**/*.test.php"
+    ],
+    "bail": false,
+    "log": {
+        "traceReverse": true,
+        "logo": true,
+        "color": true,
+        "clear": true,
+        "short": false
+    }
+}
