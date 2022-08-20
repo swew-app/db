@@ -143,9 +143,7 @@ UserModel::query(UserModel::JOIN_COMMENT)->get();
 // Paginate
 UserModel::query(UserModel::JOIN_COMMENT)->getPages($pageNumber = 1, $perPage = 10);
 UserModel::query(UserModel::JOIN_COMMENT)->getPagesWithCount();
-```
 
-```php
 // Result
 [
     'data' => $items, // array
@@ -154,10 +152,11 @@ UserModel::query(UserModel::JOIN_COMMENT)->getPagesWithCount();
     'prev' => 0,
     // 'count' => 10, // if use ->getPageWithCount()
 ];
-
-UserModel::query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
 ```
+
 ```php
+UserModel::query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
+
 // Result
 [
     'data' => $items, // array
