@@ -117,6 +117,14 @@ class ExecuteQuery
 
         $sql .= ' ' . implode(' OR ', $where);
 
+        if ($this->limit > 0) {
+            if ($this->offset > 0) {
+                $sql .= "LIMIT " . $this->offset . ', '. $this->limit;
+            } else {
+                $sql .= "LIMIT " . $this->limit;
+            }
+        }
+
         return [
             'sql' => $sql,
             'data' => $data,
@@ -164,6 +172,28 @@ class ExecuteQuery
         }
 
         return ["WHERE `$key` $comp ?", $val];
+    }
+
+    private int $limit = 0;
+
+    public function limit(int $limit, int $offset = 0): self
+    {
+        $this->limit = $limit;
+
+        if ($offset > 0) {
+            $this->offset($offset);
+        }
+
+        return $this;
+    }
+
+    private int $offset = 0;
+
+    public function offset(int $offset): self
+    {
+        $this->offset = $offset;
+
+        return $this;
     }
 
     private function fillDto(array $value): Model

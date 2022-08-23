@@ -115,3 +115,27 @@ it('Model [WHERE OR WHERE]', function () {
     expect($res['sql'])->toBe($sql);
     expect($res['data'])->toBe(['Mike', 2, 3, 4, 5]);
 });
+
+it('Model [LIMIT OFFSET]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER)
+        ->offset(10)
+        ->limit(1)
+        ->toSql();
+
+    $sql = 'SELECT * FROM users LIMIT 10, 1';
+
+    expect($res['sql'])->toBe($sql);
+
+    $res = UserModel::vm()->query(UserModel::GET_USER)
+        ->limit(1, 10)
+        ->toSql();
+
+    expect($res['sql'])->toBe($sql);
+
+    $data = UserModel::vm()->query(UserModel::GET_USER)
+        ->offset(1)
+        ->limit(1)
+        ->get();
+
+    expect($data[0]['id'])->toBe(2);
+});
