@@ -173,3 +173,20 @@ it('Model [transaction]', function () {
 
     expect($data['name'])->toBe('Test 4');
 });
+
+it('Model [setData]', function () {
+    $user = new UserModel();
+    $user->name = 'Jack';
+    $user->email = 't_34@text.xx';
+
+    UserModel::vm()->query(UserModel::ADD_USER)
+        ->setData($user)
+        ->exec();
+
+    $data = UserModel::vm()
+        ->query(UserModel::GET_USER)
+        ->where('email', 't_34@text.xx')
+        ->getFirst();
+
+    expect($data['name'])->toBe('Jack');
+});

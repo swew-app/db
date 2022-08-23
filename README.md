@@ -115,9 +115,9 @@ $user = new UserModel();
 $user->login = 'Mr 007';
 $user->name = 'James';
 
-$lastId = UserModel::vm()->queryItem(UserModel::INSERT_LOGIN_NAME)->exec()->id();
-
-UserModel::vm()->queryItem(UserModel::INSERT_LOGIN_NAME)->exec();
+$lastId = UserModel::vm()->query(UserModel::INSERT_LOGIN_NAME)
+    ->setData($user)
+    ->exec()->id();
 
 UserModel::vm()
     ->query(UserModel::INSERT_LOGIN_NAME, ['login' => 'MyLogin', 'name' => 'My Name'])

@@ -54,8 +54,12 @@ class ExecuteQuery
         }
     }
 
-    public function setData(array $data): self
+    public function setData(array|Model $data): self
     {
+        if ($data instanceof Model) {
+            $data = get_object_vars($data);
+        }
+
         $this->data = $data;
 
         return $this;
