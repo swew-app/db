@@ -44,7 +44,7 @@ it('Model [get]', function () {
             ],
         ]
     );
-})->only();
+});
 
 it('Model [getFirst]', function () {
     $res = UserModel::vm()->query(UserModel::ALL_USERS)->getFirst();
@@ -55,7 +55,7 @@ it('Model [getFirst]', function () {
         'email' => 't1@text.xx',
         'password' => 'secret',
     ]);
-})->only();
+});
 
 it('Model [getFirstItem]', function () {
     $res = UserModel::vm()->query(UserModel::ALL_USERS)->getFirstItem();
@@ -66,8 +66,7 @@ it('Model [getFirstItem]', function () {
     $user->password = '#SALT_secret';
 
     expect($res)->toEqual($user);
-
-})->only();
+});
 
 it('Model [getItems]', function () {
     $res = UserModel::vm()->query(UserModel::ALL_USERS)->getItems();
@@ -84,8 +83,7 @@ it('Model [getItems]', function () {
 
     expect($res[0])->toEqual($user1);
     expect($res[1])->toEqual($user2);
-
-})->only();
+});
 
 it('Model [update WHERE]', function () {
     UserModel::vm()->query(UserModel::UPDATE_NAME)
@@ -102,4 +100,18 @@ it('Model [update WHERE]', function () {
         'email' => 't2@text.xx',
         'password' => 'secret',
     ]);
-})->only();
+});
+
+it('Model [WHERE OR WHERE]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->where('id', 2)
+        ->where('id', 3)
+        ->orWhere('id', 4)
+        ->orWhere('id', 5)
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE `id` = ? AND WHERE `id` = ? OR WHERE `id` = ? OR WHERE `id` = ?';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 2, 3, 4, 5]);
+});

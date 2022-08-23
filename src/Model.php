@@ -35,7 +35,7 @@ abstract class Model
         return self::$tablePrefix . $this->table();
     }
 
-    public function query(string $sqlQuery, mixed $data = null)
+    public function query(string $sqlQuery, array $data = [])
     {
         $tables = array_map(fn (string $name) => "[$name]", $this->mapTable());
 

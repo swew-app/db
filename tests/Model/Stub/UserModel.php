@@ -30,4 +30,6 @@ class UserModel extends Model
     const ADD_USER = 'INSERT INTO [TABLE] (name, email, password) VALUES (:name, :email, :password)';
 
     const UPDATE_NAME = 'UPDATE [TABLE] SET name = ?';
+
+    const GET_USER = 'SELECT * FROM [TABLE]';
 }

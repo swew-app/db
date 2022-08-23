@@ -16,17 +16,8 @@ class ExecuteQuery
         readonly private PDO $pdo,
         private string $sql,
         private Model $dto,
-        private ?array $data = null,
-    )
-    {
-    }
-
-    public function toSql(): array
-    {
-        return [
-            'sql' => $this->sql,
-            'data' => $this->data,
-        ];
+        private array $data = []
+    ) {
     }
 
     public function exec(?array $data = null): self
@@ -100,42 +91,62 @@ class ExecuteQuery
         );
     }
 
-    private function fillDto(array $value): Model
+    public function toSql(?array $data = null): array
     {
-        $dto = clone $this->dto;
-
-        foreach ($value as $key => $value) {
-            if (isset($dto->$key)) {
-                $dto->$key = $this->dto->castValue($key, $value);
-            }
-        }
-
-        return $dto;
-    }
-
-    private function prepareAndExecute(?array $data = null): bool
-    {
+        $data = $data ?: $this->data ?: [];
         $sql = $this->sql;
+        $whereQuery = '';
         $where = [];
 
-        if (count($this->where)> 0) {
+        if (count($this->where) > 0) {
             foreach ($this->where as $v) {
                 $where[] = $v[0];
                 $data[] = $v[1];
             }
-            $sql .= ' ' . implode(' AND ', $where);
+            $where = [
+                implode(' AND ', $where)
+            ];
         }
 
-        $this->sth = $this->pdo->prepare($sql);
-        return $this->sth->execute($data ?: $this->data);
+        if (count($this->orWhere) > 0) {
+            foreach ($this->orWhere as $v) {
+                $where[] = $v[0];
+                $data[] = $v[1];
+            }
+        }
+
+        $sql .= ' ' . implode(' OR ', $where);
+
+        return [
+            'sql' => $sql,
+            'data' => $data,
+        ];
     }
 
     private array $where = [];
+
+    private array $orWhere = [];
 
     public function where(): self
     {
         $args = func_get_args();
 
+        $this->where[] = $this->whereQuery($args);
+
+        return $this;
+    }
+
+    public function orWhere(): self
+    {
+        $args = func_get_args();
+
+        $this->orWhere[] = $this->whereQuery($args);
+
+        return $this;
+    }
+
+    private function whereQuery(array $args): array
+    {
         $key = '';
         $comp = '=';
         $val = '';
@@ -152,8 +163,28 @@ class ExecuteQuery
             throw new \LogicException('Wrong parameters');
         }
 
-        $this->where[] = ["WHERE `$key` $comp ?", $val];
-
-        return $this;
+        return ["WHERE `$key` $comp ?", $val];
     }
+
+    private function fillDto(array $value): Model
+    {
+        $dto = clone $this->dto;
+
+        foreach ($value as $key => $value) {
+            if (isset($dto->$key)) {
+                $dto->$key = $this->dto->castValue($key, $value);
+            }
+        }
+
+        return $dto;
+    }
+
+    private function prepareAndExecute(?array $data = null): bool
+    {
+        [ 'sql'=> $sql, 'data' => $newData ] = $this->toSql($data ?: $this->data);
+
+        $this->sth = $this->pdo->prepare($sql);
+        return $this->sth->execute($newData);
+    }
+
 }
