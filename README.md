@@ -1,5 +1,4 @@
-# SWEW/db
-
+# SWEW\db\
 Simplest Migration and SqlModel tool
 
 
@@ -12,7 +11,7 @@ Simplest Migration and SqlModel tool
 <?php
 
 // Migration file
-use Swew/Db/{Migrate,Migrator};
+use Swew\Db\{Migrate,Migrator};
 
 Migrate::up(function (Migrator $table) {
     $table->tableCreate('users');
@@ -33,7 +32,7 @@ Migrate::down(function (Migrator $table) {
 ```php
 <?php
 
-use Swew/Db/Model;
+use Swew\Db\Model;
 
 class UserModel extends Model {
     // acceptable fields, should be used with default values, so there are no errors in php 8.2
@@ -57,21 +56,21 @@ class UserModel extends Model {
     protected function hasTimestamp(): bool {
         return true;
     }
-    
+
     protected function getCast(): array
     {
         return [
             // Default casting
             'created_at' => fn ($timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
             'updated_at' => fn ($timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
-        ];       
+        ];
     }
-    
+
     protected function setCast(): array
     {
-        return [ 
+        return [
             'password' => fn ($str) => password_hash($str, PASSWORD_BCRYPT),
-        ];       
+        ];
     }
 
     protected function mapTable(): array
@@ -102,7 +101,7 @@ UserModel::query(UserModel::MOST_POPULAR_USER)
     ->offset(2)
     ->limit(1)
     ->getFirst();
-    
+
 UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // UserModel
 UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
 
@@ -174,6 +173,6 @@ UserModel::query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber 
 $isOk = Model::transaction(function () {
     UserModel::query(UserModel::UPDATE_NAME, 'Leo')->where('id', 1)->exec();
     UserModel::query(UserModel::UPDATE_NAME, 'Don')->where('id', 2)->exec();
-    UserModel::query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec(); 
+    UserModel::query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec();
 });
 ```

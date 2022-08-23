@@ -34,6 +34,11 @@ final class Migrator
         }
     }
 
+    public function setSql(string $sqlQuery): void
+    {
+        $this->sqlLines[] = $sqlQuery;
+    }
+
     public function getSql(): string
     {
         $lines = [];
@@ -107,7 +112,7 @@ final class Migrator
 
         return $column;
     }
-
+    #region [TEXT]
     public function char(string $name, int $length = 1): MigrationColumn
     {
         $column = new MigrationColumn($name);
@@ -129,4 +134,16 @@ final class Migrator
 
         return $column;
     }
+
+    public function text(string $name, int $length = 255): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $column->setType("TEXT($length)");
+
+        $this->addLine($column);
+
+        return $column;
+    }
+    #endregion
 }
