@@ -13,6 +13,8 @@ abstract class Model
 
     private static ?PDO $pdo = null;
 
+    private ?PDO $pdoCurrentQuery = null;
+
     abstract protected function table(): string;
 
     public static function setTablePrefix(string $tablePrefix): void
@@ -23,6 +25,11 @@ abstract class Model
     public static function setPDO(PDO $pdo): void
     {
         self::$pdo = $pdo;
+    }
+
+    public function setCurrentQueryPDO(PDO $pdo): void
+    {
+        $this->pdoCurrentQuery = $pdo;
     }
 
     public static function vm()
@@ -43,7 +50,9 @@ abstract class Model
 
         $sql = strtr($sqlQuery, $tables);
 
-        return new ExecuteQuery(self::$pdo, $sql, $this, $data);
+        $pdo = $this->pdoCurrentQuery ?: self::$pdo;
+
+        return new ExecuteQuery($pdo, $sql, $this, $data);
     }
 
     protected function hasTimestamp(): bool

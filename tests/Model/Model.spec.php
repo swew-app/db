@@ -149,4 +149,4 @@ it('Model [LastId]', function () {
     ])->id();
 
     expect($id)->toBe('3');
-})->only();
+});
