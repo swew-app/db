@@ -46,11 +46,13 @@ abstract class Model
         return new ExecuteQuery(self::$pdo, $sql, $this, $data);
     }
 
-    protected function hasTimestamp(): bool {
+    protected function hasTimestamp(): bool
+    {
         return true;
     }
 
-    protected function id(): string {
+    protected function id(): string
+    {
         return 'id';
     }
 
@@ -83,5 +85,11 @@ abstract class Model
             return $fn($value);
         }
         return $value;
+    }
+
+    public final function getLastId(): mixed
+    {
+        $id = $this->id();
+        return self::$pdo->lastInsertId($id);
     }
 }

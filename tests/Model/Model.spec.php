@@ -139,3 +139,14 @@ it('Model [LIMIT OFFSET]', function () {
 
     expect($data[0]['id'])->toBe(2);
 });
+
+
+it('Model [LastId]', function () {
+    $id = UserModel::vm()->query(UserModel::ADD_USER)->exec([
+        'name' => 'Alex',
+        'email' => 'a13@mail.xx',
+        'password' => 'secret',
+    ])->id();
+
+    expect($id)->toBe('3');
+})->only();

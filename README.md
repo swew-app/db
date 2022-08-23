@@ -95,53 +95,55 @@ class UserModel extends Model {
 
 ## GET
 ```php
-UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->get(); // array
-UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->getFirst(); // item
-UserModel::query(UserModel::MOST_POPULAR_USER)
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->get(); // array
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirst(); // item
+UserModel::vm()->query(UserModel::MOST_POPULAR_USER)
     ->offset(2)
     ->limit(1)
     ->getFirst();
 
-UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // UserModel
-UserModel::query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // UserModel
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
 
-UserModel::query(UserModel::MOST_POPULAR_USER)->count();
+UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->count();
 ```
 
 ## INSERT
 ```php
-$user = UserModel::createItem();
+$user = new UserModel();
 
 $user->login = 'Mr 007';
 $user->name = 'James';
 
-$lastId = UserModel::queryItem(UserModel::INSERT_LOGIN_NAME)->exec()->id();
+$lastId = UserModel::vm()->queryItem(UserModel::INSERT_LOGIN_NAME)->exec()->id();
 
-UserModel::queryItem(UserModel::INSERT_LOGIN_NAME)->exec();
+UserModel::vm()->queryItem(UserModel::INSERT_LOGIN_NAME)->exec();
 
-UserModel::query(UserModel::INSERT_LOGIN_NAME, ['login' => 'MyLogin', 'name' => 'My Name'])->exec();
+UserModel::vm()
+    ->query(UserModel::INSERT_LOGIN_NAME, ['login' => 'MyLogin', 'name' => 'My Name'])
+    ->exec();
 ```
 
 ## UPDATE
 ```php
-UserModel::query(UserModel::UPDATE_NAME, 'Garry')->where('id', 1)->exec();
+UserModel::vm()->query(UserModel::UPDATE_NAME, 'Garry')->where('id', 1)->exec();
 
-UserModel::query(UserModel::UPDATE_NAME)
+UserModel::vm()->query(UserModel::UPDATE_NAME)
     ->update('Garry')
     ->where('id', 1)->exec();
 
-UserModel::query(UserModel::UPDATE_NAME)
+UserModel::vm()->query(UserModel::UPDATE_NAME)
     ->updateMany(['Garry'])
     ->where('id', 1)->exec();
 ```
 
 ## JOIN
 ```php
-UserModel::query(UserModel::JOIN_COMMENT)->get();
+UserModel::vm()->query(UserModel::JOIN_COMMENT)->get();
 
 // Paginate
-UserModel::query(UserModel::JOIN_COMMENT)->getPages($pageNumber = 1, $perPage = 10);
-UserModel::query(UserModel::JOIN_COMMENT)->getPagesWithCount();
+UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPages($pageNumber = 1, $perPage = 10);
+UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPagesWithCount();
 
 // Result
 [
@@ -154,7 +156,7 @@ UserModel::query(UserModel::JOIN_COMMENT)->getPagesWithCount();
 ```
 
 ```php
-UserModel::query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
+UserModel::vm()->query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
 
 // Result
 [
@@ -171,8 +173,8 @@ UserModel::query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber 
 
 ```php
 $isOk = Model::transaction(function () {
-    UserModel::query(UserModel::UPDATE_NAME, 'Leo')->where('id', 1)->exec();
-    UserModel::query(UserModel::UPDATE_NAME, 'Don')->where('id', 2)->exec();
-    UserModel::query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec();
+    UserModel::vm()->query(UserModel::UPDATE_NAME, 'Leo')->where('id', 1)->exec();
+    UserModel::vm()->query(UserModel::UPDATE_NAME, 'Don')->where('id', 2)->exec();
+    UserModel::vm()->query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec();
 });
 ```

@@ -20,6 +20,11 @@ class ExecuteQuery
     ) {
     }
 
+    public function id(): mixed
+    {
+        return $this->dto->getLastId();
+    }
+
     public function exec(?array $data = null): self
     {
         $this->prepareAndExecute($data);
