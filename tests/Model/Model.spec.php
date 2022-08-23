@@ -140,7 +140,6 @@ it('Model [LIMIT OFFSET]', function () {
     expect($data[0]['id'])->toBe(2);
 });
 
-
 it('Model [LastId]', function () {
     $id = UserModel::vm()->query(UserModel::ADD_USER)->exec([
         'name' => 'Alex',
@@ -149,4 +148,28 @@ it('Model [LastId]', function () {
     ])->id();
 
     expect($id)->toBe('3');
+});
+
+it('Model [transaction]', function () {
+    $isOk = UserModel::transaction(function () {
+        UserModel::vm()->query(UserModel::ADD_USER)->exec([
+            'name' => 'Test 3',
+            'email' => 't3@test.xx',
+            'password' => 'secret',
+        ]);
+        UserModel::vm()->query(UserModel::ADD_USER)->exec([
+            'name' => 'Test 4',
+            'email' => 't4@test.xx',
+            'password' => 'secret',
+        ]);
+    });
+
+    expect($isOk)->toBe(true);
+
+    $data = UserModel::vm()
+        ->query(UserModel::GET_USER)
+        ->where('email', 't4@test.xx')
+        ->getFirst();
+
+    expect($data['name'])->toBe('Test 4');
 });

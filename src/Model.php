@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
+use LogicException;
 use PDO;
 use Swew\Db\Lib\Model\ExecuteQuery;
 
@@ -42,6 +43,17 @@ abstract class Model
         return self::$tablePrefix . $this->table();
     }
 
+    private function getPDO(): PDO
+    {
+        $pdo = $this->pdoCurrentQuery ?: self::$pdo;
+
+        if (is_null($pdo)) {
+            throw new \LogicException('Please set PDO, use method ::setPDO');
+        }
+
+        return $pdo;
+    }
+
     public function query(string $sqlQuery, array $data = [])
     {
         $tables = array_map(fn (string $name) => "[$name]", $this->mapTable());
@@ -50,7 +62,7 @@ abstract class Model
 
         $sql = strtr($sqlQuery, $tables);
 
-        $pdo = $this->pdoCurrentQuery ?: self::$pdo;
+        $pdo = $this->getPDO();
 
         return new ExecuteQuery($pdo, $sql, $this, $data);
     }
@@ -100,5 +112,19 @@ abstract class Model
     {
         $id = $this->id();
         return self::$pdo->lastInsertId($id);
+    }
+
+    public static function transaction(callable $callback): bool
+    {
+        $pdo = self::vm()->getPDO();
+
+        try {
+            $pdo->beginTransaction();
+            $callback();
+            $pdo->commit();
+            return true;
+        } catch(\Exception $e) {
+            return false;
+        }
     }
 }

@@ -172,7 +172,7 @@ UserModel::vm()->query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageN
 ## Transaction
 
 ```php
-$isOk = Model::transaction(function () {
+$isOk = UserModel::transaction(function () {
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Leo')->where('id', 1)->exec();
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Don')->where('id', 2)->exec();
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec();
