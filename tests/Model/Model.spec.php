@@ -9,18 +9,7 @@ beforeAll(function () {
     $pdo = getPDO(true);
     Model::setPDO($pdo);
 
-    $data = [
-        [
-            'name' => 'Jon',
-            'email' => 't1@text.xx',
-            'password' => 'secret',
-        ],
-        [
-            'name' => 'Dow',
-            'email' => 't2@text.xx',
-            'password' => 'secret',
-        ],
-    ];
+    $data = getFakeUsers(2);
 
     UserModel::vm()->query(UserModel::ADD_USER)->execMany($data);
 });
@@ -32,14 +21,14 @@ it('Model [get]', function () {
         [
             [
                 'id' => 1,
-                'name' => 'Jon',
-                'email' => 't1@text.xx',
+                'name' => 'Jon 1',
+                'email' => 't1@test.xx',
                 'password' => 'secret',
             ],
             [
                 'id' => 2,
-                'name' => 'Dow',
-                'email' => 't2@text.xx',
+                'name' => 'Jon 2',
+                'email' => 't2@test.xx',
                 'password' => 'secret',
             ],
         ]
@@ -51,8 +40,8 @@ it('Model [getFirst]', function () {
 
     expect($res)->toBe([
         'id' => 1,
-        'name' => 'Jon',
-        'email' => 't1@text.xx',
+        'name' => 'Jon 1',
+        'email' => 't1@test.xx',
         'password' => 'secret',
     ]);
 });
@@ -61,8 +50,8 @@ it('Model [getFirstItem]', function () {
     $res = UserModel::vm()->query(UserModel::ALL_USERS)->getFirstItem();
 
     $user = new UserModel();
-    $user->name = 'Jon';
-    $user->email = 't1@text.xx';
+    $user->name = 'Jon 1';
+    $user->email = 't1@test.xx';
     $user->password = '#SALT_secret';
 
     expect($res)->toEqual($user);
@@ -72,13 +61,13 @@ it('Model [getItems]', function () {
     $res = UserModel::vm()->query(UserModel::ALL_USERS)->getItems();
 
     $user1 = new UserModel();
-    $user1->name = 'Jon';
-    $user1->email = 't1@text.xx';
+    $user1->name = 'Jon 1';
+    $user1->email = 't1@test.xx';
     $user1->password = '#SALT_secret';
 
     $user2 = new UserModel();
-    $user2->name = 'Dow';
-    $user2->email = 't2@text.xx';
+    $user2->name = 'Jon 2';
+    $user2->email = 't2@test.xx';
     $user2->password = '#SALT_secret';
 
     expect($res[0])->toEqual($user1);
@@ -97,7 +86,7 @@ it('Model [update WHERE]', function () {
     expect($res)->toBe([
         'id' => 2,
         'name' => 'Leo',
-        'email' => 't2@text.xx',
+        'email' => 't2@test.xx',
         'password' => 'secret',
     ]);
 });
@@ -186,7 +175,7 @@ it('Model [transaction]', function () {
 it('Model [setData]', function () {
     $user = new UserModel();
     $user->name = 'Jack';
-    $user->email = 't_34@text.xx';
+    $user->email = 't_34@test.xx';
 
     UserModel::vm()->query(UserModel::ADD_USER)
         ->setData($user)
@@ -194,7 +183,7 @@ it('Model [setData]', function () {
 
     $data = UserModel::vm()
         ->query(UserModel::GET_USER)
-        ->where('email', 't_34@text.xx')
+        ->where('email', 't_34@test.xx')
         ->getFirst();
 
     expect($data['name'])->toBe('Jack');

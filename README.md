@@ -153,6 +153,7 @@ $count = UserModel::vm()
 ```
 
 ## JOIN
+
 ```php
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->get();
 

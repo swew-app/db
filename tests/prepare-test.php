@@ -23,3 +23,21 @@ function getPDO(bool $isCreateUserTable = false): PDO
 
     return $pdo;
 }
+
+function getFakeUsers(int $count = 1): array {
+    $users = [];
+    $i = 0;
+
+    while ($count > 0) {
+        --$count;
+        ++$i;
+
+        $users[] = [
+            'name' => "Jon {$i}",
+            'email' => "t{$i}@test.xx",
+            'password' => 'secret',
+        ];
+    }
+
+    return $users;
+}
