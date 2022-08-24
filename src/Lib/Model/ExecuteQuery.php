@@ -15,7 +15,7 @@ class ExecuteQuery
     public function __construct(
         readonly private PDO $pdo,
         private string $sql,
-        private Model $dto,
+        readonly private Model $dto,
         private array $data = []
     ) {
     }
@@ -74,10 +74,7 @@ class ExecuteQuery
 
     public function getFirst(): array
     {
-        if (!str_contains($this->sql, 'LIMIT')) {
-            $sql = $this->sql . ' LIMIT 1';
-            $this->sth = $this->pdo->prepare($sql);
-        }
+        $this->limit(1);
 
         $this->prepareAndExecute();
 
@@ -87,6 +84,7 @@ class ExecuteQuery
     public function getFirstItem(): Model
     {
         $result = $this->getFirst();
+
         return $this->fillDto($result);
     }
 
@@ -100,11 +98,25 @@ class ExecuteQuery
         );
     }
 
+    public function getValue(?string $key = null): mixed
+    {
+        $result = $this->getFirst();
+
+        if (!is_array($result)) {
+            return null;
+        }
+
+        if (!is_null($key)) {
+            return $result[$key];
+        }
+
+        return array_values($result)[0];
+    }
+
     public function toSql(?array $data = null): array
     {
         $data = $data ?: $this->data ?: [];
         $sql = $this->sql;
-        $whereQuery = '';
         $where = [];
 
         if (count($this->where) > 0) {
@@ -225,5 +237,4 @@ class ExecuteQuery
         $this->sth = $this->pdo->prepare($sql);
         return $this->sth->execute($newData);
     }
-
 }

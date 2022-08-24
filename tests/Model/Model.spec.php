@@ -140,6 +140,15 @@ it('Model [LIMIT OFFSET]', function () {
     expect($data[0]['id'])->toBe(2);
 });
 
+it('Model [count]', function () {
+    $count = UserModel::vm()
+        ->count()
+        ->where('id', '<', 3)
+        ->getValue();
+
+    expect($count)->toBe(2);
+});
+
 it('Model [LastId]', function () {
     $id = UserModel::vm()->query(UserModel::ADD_USER)->exec([
         'name' => 'Alex',

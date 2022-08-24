@@ -127,4 +127,11 @@ abstract class Model
             return false;
         }
     }
+
+    public final function count(): ExecuteQuery
+    {
+        $idKey = $this->id();
+        $sql = "SELECT count(`$idKey`) as `count` FROM [TABLE]";
+        return $this->query($sql);
+    }
 }

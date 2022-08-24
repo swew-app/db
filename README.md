@@ -105,7 +105,7 @@ UserModel::vm()->query(UserModel::MOST_POPULAR_USER)
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // UserModel
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
 
-UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->count();
+UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getValue(); // First value from first item
 ```
 
 ## INSERT
@@ -117,7 +117,8 @@ $user->name = 'James';
 
 $lastId = UserModel::vm()->query(UserModel::INSERT_LOGIN_NAME)
     ->setData($user)
-    ->exec()->id();
+    ->exec()
+    ->id();
 
 UserModel::vm()
     ->query(UserModel::INSERT_LOGIN_NAME, ['login' => 'MyLogin', 'name' => 'My Name'])
@@ -126,15 +127,29 @@ UserModel::vm()
 
 ## UPDATE
 ```php
-UserModel::vm()->query(UserModel::UPDATE_NAME, 'Garry')->where('id', 1)->exec();
+UserModel::vm()
+    ->query(UserModel::UPDATE_NAME, 'Garry')
+    ->where('id', 1)
+    ->exec();
 
-UserModel::vm()->query(UserModel::UPDATE_NAME)
-    ->update('Garry')
-    ->where('id', 1)->exec();
+UserModel::vm()
+    ->query(UserModel::UPDATE_NAME)
+    ->where('id', 1)
+    ->exec('Garry');
 
-UserModel::vm()->query(UserModel::UPDATE_NAME)
-    ->updateMany(['Garry'])
-    ->where('id', 1)->exec();
+UserModel::vm()
+    ->query(UserModel::UPDATE_NAME)
+    ->where('id', 1)
+    ->execMany(['Garry']);
+```
+
+## COUNT
+
+```php
+$count = UserModel::vm()
+    ->count()
+    ->where('id', '>', 2)
+    ->getValue();
 ```
 
 ## JOIN
