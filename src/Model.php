@@ -54,7 +54,7 @@ abstract class Model
         return $pdo;
     }
 
-    public function query(string $sqlQuery, array $data = [])
+    public function query(string $sqlQuery, array|Model $data = [])
     {
         $tables = array_map(fn (string $name) => "[$name]", $this->mapTable());
 
@@ -93,7 +93,12 @@ abstract class Model
         ];
     }
 
-    public final function castValue(string $key, mixed $value): mixed
+    protected function setCast(): array
+    {
+        return [];
+    }
+
+    public final function castGetValue(string $key, mixed $value): mixed
     {
         if (is_null(self::$casts)) {
             self::$casts = $this->getCast();
@@ -106,6 +111,19 @@ abstract class Model
             return $fn($value);
         }
         return $value;
+    }
+
+    public final function castSetValues(array $values): array {
+        $casts = $this->setCast();
+
+        foreach ($values as $key => $value) {
+            if (isset($casts[$key])) {
+                $fn = $casts[$key];
+                $values[$key] = $fn($value);
+            }
+        }
+
+        return $values;
     }
 
     public final function getLastId(): mixed

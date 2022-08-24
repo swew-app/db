@@ -14,8 +14,26 @@ beforeAll(function () {
     UserModel::vm()->query(UserModel::ADD_USER)->execMany($data);
 });
 
+it('Model [execMany]', function () {
+    $email = "t-exec-many@test.xx";
+
+    UserModel::vm()->query(UserModel::ADD_USER)->execMany([
+        [
+            'name' => 'Jon X',
+            'email' => $email,
+            'password' => 'secret',
+        ]
+    ]);
+
+    $item = UserModel::vm()->query(UserModel::ALL_USERS)->where('email', $email)->getFirstItem();
+
+    expect($item->password)->toBe('#SALT_secret');
+});
+
 it('Model [get]', function () {
-    $res = UserModel::vm()->query(UserModel::ALL_USERS)->get();
+    $res = UserModel::vm()->query(UserModel::ALL_USERS)
+        ->limit(2)
+        ->get();
 
     expect($res)->toBe(
         [
@@ -23,13 +41,13 @@ it('Model [get]', function () {
                 'id' => 1,
                 'name' => 'Jon 1',
                 'email' => 't1@test.xx',
-                'password' => 'secret',
+                'password' => '#SALT_secret',
             ],
             [
                 'id' => 2,
                 'name' => 'Jon 2',
                 'email' => 't2@test.xx',
-                'password' => 'secret',
+                'password' => '#SALT_secret',
             ],
         ]
     );
@@ -42,7 +60,7 @@ it('Model [getFirst]', function () {
         'id' => 1,
         'name' => 'Jon 1',
         'email' => 't1@test.xx',
-        'password' => 'secret',
+        'password' => '#SALT_secret',
     ]);
 });
 
@@ -70,6 +88,8 @@ it('Model [getItems]', function () {
     $user2->email = 't2@test.xx';
     $user2->password = '#SALT_secret';
 
+    expect($res[0]->password)->toBe('#SALT_secret');
+
     expect($res[0])->toEqual($user1);
     expect($res[1])->toEqual($user2);
 });
@@ -87,7 +107,7 @@ it('Model [update WHERE]', function () {
         'id' => 2,
         'name' => 'Leo',
         'email' => 't2@test.xx',
-        'password' => 'secret',
+        'password' => '#SALT_secret',
     ]);
 });
 
@@ -145,7 +165,7 @@ it('Model [LastId]', function () {
         'password' => 'secret',
     ])->id();
 
-    expect($id)->toBe('3');
+    expect($id)->toBe('4');
 });
 
 it('Model [transaction]', function () {
@@ -188,3 +208,9 @@ it('Model [setData]', function () {
 
     expect($data['name'])->toBe('Jack');
 });
+
+
+it('Model [setCast, getCast]', function () {
+
+});
+

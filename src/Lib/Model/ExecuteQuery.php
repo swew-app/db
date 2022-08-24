@@ -34,14 +34,16 @@ class ExecuteQuery
 
     public function execMany(?array $data = null): bool
     {
-        $data = $data ?: $this->data;
+        [ 'sql'=> $sql, 'data' => $newData ] = $this->toSql($data ?: $this->data);
 
         try {
             $this->pdo->beginTransaction();
-            $sth = $this->pdo->prepare($this->sql);
+            $sth = $this->pdo->prepare($sql);
 
-            foreach ($data as $value) {
-                $sth->execute($value);
+            foreach ($newData as $value) {
+                $sth->execute(
+                    $this->dto->castSetValues($value)
+                );
             }
 
             $this->pdo->commit();
@@ -148,7 +150,7 @@ class ExecuteQuery
 
         return [
             'sql' => $sql,
-            'data' => $data,
+            'data' => $this->dto->castSetValues($data),
         ];
     }
 
@@ -223,7 +225,7 @@ class ExecuteQuery
 
         foreach ($value as $key => $value) {
             if (isset($dto->$key)) {
-                $dto->$key = $this->dto->castValue($key, $value);
+                $dto->$key = $this->dto->castGetValue($key, $value);
             }
         }
 
