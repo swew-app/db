@@ -21,13 +21,13 @@ class ExecuteQuery
     public function __construct(
         readonly private PDO $pdo,
         private string $sql,
-        readonly private Model $dto,
+        readonly private Model $model,
     ) {
     }
 
     public function id(): mixed
     {
-        return $this->dto->getLastId();
+        return $this->model->getLastId();
     }
 
     public function isDone(): bool
@@ -52,7 +52,7 @@ class ExecuteQuery
 
             foreach ($newData as $value) {
                 $sth->execute(
-                    $this->dto->castValues($value, false)
+                    $this->model->castValues($value, false)
                 );
             }
 
@@ -72,7 +72,7 @@ class ExecuteQuery
             $data = Obj::getObjectVars($data);
         }
 
-        $this->data = $this->dto->getFilteredDataWithoutId($data);
+        $this->data = $this->model->getFilteredDataWithoutId($data);
 
         return $this;
     }
@@ -84,7 +84,7 @@ class ExecuteQuery
         $results = $this->sth->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map(
-            fn (mixed $v) => $this->dto->castValues($v, true),
+            fn (mixed $v) => $this->model->castValues($v, true),
             $results
         );
     }
@@ -101,7 +101,7 @@ class ExecuteQuery
             return false;
         }
 
-        return $this->dto->castValues($result, true);
+        return $this->model->castValues($result, true);
     }
 
     public function getFirstItem(): Model
@@ -209,7 +209,7 @@ class ExecuteQuery
 
         return [
             'sql' => $sql,
-            'data' => $this->dto->castValues($data, false),
+            'data' => $this->model->castValues($data, false),
         ];
     }
 
@@ -311,15 +311,15 @@ class ExecuteQuery
 
     private function fillDto(array $value): Model
     {
-        $dto = clone $this->dto;
+        $model = clone $this->model;
 
         foreach ($value as $key => $value) {
-            if (isset($dto->$key)) {
-                $dto->$key = $this->dto->castGetValue($key, $value);
+            if (isset($model->$key)) {
+                $model->$key = $this->model->castGetValue($key, $value);
             }
         }
 
-        return $dto;
+        return $model;
     }
 
     private function prepareAndExecute(?array $data = null): bool
