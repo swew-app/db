@@ -52,7 +52,7 @@ class UserModel extends Model {
         return 'id';
     }
 
-    // Update updated_at, and add created_at date fields [optional] [default: true]
+    // Update updated_at, and add created_at date fields [optional] [default: false]
     protected function hasTimestamp(): bool {
         return true;
     }

@@ -18,6 +18,11 @@ class UserSoftModel extends Model
         return true;
     }
 
+    protected function hasTimestamp(): bool
+    {
+        return true;
+    }
+
     protected function getCast(): array
     {
         return [

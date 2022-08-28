@@ -334,3 +334,15 @@ it('Model [softDelete]', function () {
 
     expect(count($res))->toBe(1);
 });
+
+it('Model [timestamp]', function () {
+    UserSoftModel::vm()->save([
+        'name' => 'Tim',
+        'email' => 't-34@m.com',
+        'password' => 'super_pass',
+    ]);
+
+    $res = UserSoftModel::vm()->select()->where('name', 'Tim')->getFirst();
+
+    expect($res['created_at'])->not->toBe(null);
+});

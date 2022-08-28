@@ -92,7 +92,7 @@ abstract class Model
 
     protected function hasTimestamp(): bool
     {
-        return true;
+        return false;
     }
 
     protected function softDelete(): bool
@@ -133,8 +133,8 @@ abstract class Model
     {
         return [
             // Default casting
-            'created_at' => fn (mixed $timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
-            'updated_at' => fn (mixed $timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
+            'created_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
+            'updated_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
         ];
     }
 
@@ -220,9 +220,15 @@ abstract class Model
         return $exq;
     }
 
-    public function save(): ExecuteQuery
+    public function save(?array $data = null): ExecuteQuery
     {
-        $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
+        if (is_null($data)) {
+            $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
+        }
+
+        if ($this->hasTimestamp()) {
+            $this->addTimestampValues($data, true);
+        }
 
         $keys = array_map(fn (string $key) => "`$key`", array_keys($data));
         $keysString = implode(', ', $keys);
@@ -253,6 +259,10 @@ abstract class Model
 
         $data = $this->castValues($data, false);
 
+        if ($this->hasTimestamp()) {
+            $this->addTimestampValues($data, false);
+        }
+
         $keys = array_keys($data);
         $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);
 
@@ -279,5 +289,16 @@ abstract class Model
         $sql = $this->getSqlWithTableName($sql);
 
         return new ExecuteQuery($this->getPDO(), $sql, $this);
+    }
+
+    private function addTimestampValues(array &$data, bool $isCreate): void
+    {
+        $now = date('Y-m-d H:i:s');
+
+        $data['updated_at'] = $now;
+
+        if ($isCreate) {
+            $data['created_at'] = $now;
+        }
     }
 }
