@@ -197,6 +197,8 @@ $isOk = UserModel::transaction(function () {
 
 ## Query without sql
 
+### select
+
 ```php
  UserModel::vm()
     ->select('name', 'rating')
@@ -207,3 +209,15 @@ $isOk = UserModel::transaction(function () {
     //     'rating' => 5,
     // ],
 ```
+
+### save
+
+```php
+$user = new UserModel();
+$user->name = 'Leo';
+$user->login = 'Ninja';
+$user->password = 'secret';
+
+$user->save();
+```
+

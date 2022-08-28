@@ -7,6 +7,7 @@ namespace Swew\Db\Lib\Model;
 use PDO;
 use PDOStatement;
 use Swew\Db\Model;
+use Swew\Db\Utils\Obj;
 
 class ExecuteQuery
 {
@@ -59,10 +60,10 @@ class ExecuteQuery
     public function setData(array|Model $data): self
     {
         if ($data instanceof Model) {
-            $data = get_object_vars($data);
+            $data = Obj::getObjectVars($data);
         }
 
-        $this->data = $data;
+        $this->data = $this->dto->getFilteredDataWithoutId($data);
 
         return $this;
     }

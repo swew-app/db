@@ -7,6 +7,7 @@ namespace Swew\Db;
 use LogicException;
 use PDO;
 use Swew\Db\Lib\Model\ExecuteQuery;
+use Swew\Db\Utils\Obj;
 
 abstract class Model
 {
@@ -14,7 +15,7 @@ abstract class Model
 
     private static ?PDO $pdo = null;
 
-    private ?PDO $pdoCurrentQuery = null;
+    private ?PDO $pdoCurrentConnection = null;
 
     abstract protected function table(): string;
 
@@ -30,7 +31,7 @@ abstract class Model
 
     public function setCurrentQueryPDO(PDO $pdo): void
     {
-        $this->pdoCurrentQuery = $pdo;
+        $this->pdoCurrentConnection = $pdo;
     }
 
     public static function vm()
@@ -45,7 +46,7 @@ abstract class Model
 
     private function getPDO(): PDO
     {
-        $pdo = $this->pdoCurrentQuery ?: self::$pdo;
+        $pdo = $this->pdoCurrentConnection ?: self::$pdo;
 
         if (is_null($pdo)) {
             throw new LogicException('Please set PDO, use method ::setPDO');
@@ -66,8 +67,8 @@ abstract class Model
     public function query(string $sqlQuery, array|Model $data = [])
     {
         $sql = $this->getSqlWithTableName($sqlQuery);
-
         $pdo = $this->getPDO();
+        $data = $this->getFilteredDataWithoutId($data);
 
         return new ExecuteQuery($pdo, $sql, $this, $data);
     }
@@ -89,9 +90,21 @@ abstract class Model
         return 'id';
     }
 
+    public function getFilteredDataWithoutId(array $data): array
+    {
+        $id = $this->id();
+
+        return array_filter($data, fn ($key) => ($key !== $id), ARRAY_FILTER_USE_KEY);
+    }
+
     /**
      * Возвращаем массив где ключ это алиас,
      * который нужно заменить на название таблицы
+     * @example
+     * [
+     *   'TABLE' => 'users',
+     *   'T1'    => 'comments',
+     * ]
      */
     protected function mapTable(): array
     {
@@ -177,4 +190,22 @@ abstract class Model
         return $this->query($sql);
     }
 
+    public function save(): ExecuteQuery
+    {
+        $pdo = $this->getPDO();
+        $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
+
+        $keys = array_map(fn (string $key) => "`$key`", array_keys($data));
+        $keysString = implode(', ', $keys);
+
+        $valuePlaces = array_map(fn () => '?', $keys);
+        $valueString = implode(', ', $valuePlaces);
+
+        $sqlQuery = "INSERT INTO [TABLE] ($keysString) VALUES ($valueString)";
+        $sql = $this->getSqlWithTableName($sqlQuery);
+
+        $exq = new ExecuteQuery($pdo, $sql, $this);
+
+        return $exq->exec(array_values($data));
+    }
 }

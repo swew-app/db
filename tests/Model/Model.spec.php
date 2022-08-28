@@ -221,3 +221,15 @@ it('Model [select]', function () {
     expect($user->name)->toBe('Jon 1');
 });
 
+it('Model [save]', function () {
+    $user = new UserModel();
+    $user->name = 'Splinter';
+    $user->email = 's1@mail.xx';
+    $user->password = 'secret';
+
+    $user->save();
+
+    $res = UserModel::vm()->select('id', 'name')->where('email', 's1@mail.xx')->getFirst();
+
+    expect($res['name'])->toBe('Splinter');
+});
