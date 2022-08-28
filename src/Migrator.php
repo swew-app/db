@@ -106,13 +106,14 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("INT");
+        $column->setType('INT');
 
         $this->addLine($column);
 
         return $column;
     }
-    #region [TEXT]
+
+    //region [TEXT]
     public function char(string $name, int $length = 1): MigrationColumn
     {
         $column = new MigrationColumn($name);
@@ -145,5 +146,5 @@ final class Migrator
 
         return $column;
     }
-    #endregion
+    //endregion
 }

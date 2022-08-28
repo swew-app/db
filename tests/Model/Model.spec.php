@@ -15,14 +15,14 @@ beforeAll(function () {
 });
 
 it('Model [execMany]', function () {
-    $email = "t-exec-many@test.xx";
+    $email = 't-exec-many@test.xx';
 
     UserModel::vm()->query(UserModel::ADD_USER)->execMany([
         [
             'name' => 'Jon X',
             'email' => $email,
             'password' => 'secret',
-        ]
+        ],
     ]);
 
     $item = UserModel::vm()->query(UserModel::ALL_USERS)->where('email', $email)->getFirstItem();
@@ -210,7 +210,6 @@ it('Model [setData]', function () {
 });
 
 it('Model [setCast, getCast]', function () {
-
 })->todo();
 
 it('Model [select]', function () {

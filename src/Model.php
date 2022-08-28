@@ -19,29 +19,30 @@ abstract class Model
 
     abstract protected function table(): string;
 
-    public static function setTablePrefix(string $tablePrefix): void
+    final public static function setTablePrefix(string $tablePrefix): void
     {
         self::$tablePrefix = $tablePrefix;
     }
 
-    public static function setPDO(PDO $pdo): void
+    final public static function setPDO(PDO $pdo): void
     {
         self::$pdo = $pdo;
     }
 
-    public function setCurrentQueryPDO(PDO $pdo): void
+    final public function setCurrentQueryPDO(PDO $pdo): void
     {
         $this->pdoCurrentConnection = $pdo;
     }
 
-    public static function vm()
+    public static function vm(): static
     {
+        /** @phpstan-ignore-next-line */
         return new static;
     }
 
     private function getTableName(): string
     {
-        return self::$tablePrefix . $this->table();
+        return self::$tablePrefix.$this->table();
     }
 
     private function getPDO(): PDO
@@ -64,19 +65,22 @@ abstract class Model
         return strtr($sqlQuery, $tables);
     }
 
-    public function query(string $sqlQuery, array|Model $data = [])
+    public function query(string $sqlQuery, array|Model $data = []): ExecuteQuery
     {
-        $sql = $this->getSqlWithTableName($sqlQuery);
         $pdo = $this->getPDO();
-        $data = $this->getFilteredDataWithoutId($data);
+        $sql = $this->getSqlWithTableName($sqlQuery);
 
-        return new ExecuteQuery($pdo, $sql, $this, $data);
+        $exq = new ExecuteQuery($pdo, $sql, $this);
+        $exq->setData($data);
+
+        return $exq;
     }
 
-    public final function count(): ExecuteQuery
+    final public function count(): ExecuteQuery
     {
         $idKey = $this->id();
         $sql = "SELECT count(`$idKey`) as `count` FROM [TABLE]";
+
         return $this->query($sql);
     }
 
@@ -100,6 +104,7 @@ abstract class Model
     /**
      * Возвращаем массив где ключ это алиас,
      * который нужно заменить на название таблицы
+     *
      * @example
      * [
      *   'TABLE' => 'users',
@@ -127,7 +132,7 @@ abstract class Model
         return [];
     }
 
-    public final function castGetValue(string $key, mixed $value): mixed
+    final public function castGetValue(string $key, mixed $value): mixed
     {
         if (is_null(self::$casts)) {
             self::$casts = $this->getCast();
@@ -137,12 +142,15 @@ abstract class Model
 
         if (isset($casts[$key])) {
             $fn = $casts[$key];
+
             return $fn($value);
         }
+
         return $value;
     }
 
-    public final function castSetValues(array $values): array {
+    final public function castSetValues(array $values): array
+    {
         $casts = $this->setCast();
 
         foreach ($values as $key => $value) {
@@ -155,9 +163,13 @@ abstract class Model
         return $values;
     }
 
-    public final function getLastId(): mixed
+    final public function getLastId(): mixed
     {
         $id = $this->id();
+        if (is_null(self::$pdo)) {
+            throw new LogicException();
+        }
+
         return self::$pdo->lastInsertId($id);
     }
 
@@ -169,8 +181,9 @@ abstract class Model
             $pdo->beginTransaction();
             $callback();
             $pdo->commit();
+
             return true;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -198,7 +211,7 @@ abstract class Model
         $keys = array_map(fn (string $key) => "`$key`", array_keys($data));
         $keysString = implode(', ', $keys);
 
-        $valuePlaces = array_map(fn () => '?', $keys);
+        $valuePlaces = array_fill(0, count($keys), '?');
         $valueString = implode(', ', $valuePlaces);
 
         $sqlQuery = "INSERT INTO [TABLE] ($keysString) VALUES ($valueString)";

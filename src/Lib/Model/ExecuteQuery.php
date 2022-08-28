@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Swew\Db\Lib\Model;
 
+use LogicException;
 use PDO;
 use PDOStatement;
 use Swew\Db\Model;
@@ -13,11 +14,12 @@ class ExecuteQuery
 {
     private PDOStatement $sth;
 
+    private array $data = [];
+
     public function __construct(
         readonly private PDO $pdo,
         private string $sql,
         readonly private Model $dto,
-        private array $data = []
     ) {
     }
 
@@ -35,7 +37,7 @@ class ExecuteQuery
 
     public function execMany(?array $data = null): bool
     {
-        [ 'sql'=> $sql, 'data' => $newData ] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql, 'data' => $newData] = $this->toSql($data ?: $this->data);
 
         try {
             $this->pdo->beginTransaction();
@@ -75,7 +77,7 @@ class ExecuteQuery
         return $this->sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getFirst(): array
+    public function getFirst(): array|bool
     {
         $this->limit(1);
 
@@ -88,12 +90,20 @@ class ExecuteQuery
     {
         $result = $this->getFirst();
 
+        if (! is_array($result)) {
+            throw new LogicException('Wrong query for get result');
+        }
+
         return $this->fillDto($result);
     }
 
     public function getItems()
     {
         $results = $this->get();
+
+        if (! is_array($results)) {
+            throw new LogicException('Wrong query for get result');
+        }
 
         return array_map(
             fn ($data) => $this->fillDto($data),
@@ -105,11 +115,11 @@ class ExecuteQuery
     {
         $result = $this->getFirst();
 
-        if (!is_array($result)) {
+        if (! is_array($result)) {
             return null;
         }
 
-        if (!is_null($key)) {
+        if (! is_null($key)) {
             return $result[$key];
         }
 
@@ -128,7 +138,7 @@ class ExecuteQuery
                 $data[] = $v[1];
             }
             $where = [
-                implode(' AND ', $where)
+                implode(' AND ', $where),
             ];
         }
 
@@ -139,13 +149,13 @@ class ExecuteQuery
             }
         }
 
-        $sql .= ' ' . implode(' OR ', $where);
+        $sql .= ' '.implode(' OR ', $where);
 
         if ($this->limit > 0) {
             if ($this->offset > 0) {
-                $sql .= "LIMIT " . $this->offset . ', '. $this->limit;
+                $sql .= 'LIMIT '.$this->offset.', '.$this->limit;
             } else {
-                $sql .= "LIMIT " . $this->limit;
+                $sql .= 'LIMIT '.$this->limit;
             }
         }
 
@@ -235,9 +245,10 @@ class ExecuteQuery
 
     private function prepareAndExecute(?array $data = null): bool
     {
-        [ 'sql'=> $sql, 'data' => $newData ] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql, 'data' => $newData] = $this->toSql($data ?: $this->data);
 
         $this->sth = $this->pdo->prepare($sql);
+
         return $this->sth->execute($newData);
     }
 }

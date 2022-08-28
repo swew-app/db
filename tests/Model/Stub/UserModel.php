@@ -14,7 +14,9 @@ class UserModel extends Model
     }
 
     public string $name = '';
+
     public string $email = '';
+
     public string $password = '';
 
     protected function getCast(): array
@@ -27,7 +29,7 @@ class UserModel extends Model
     protected function setCast(): array
     {
         return [
-            'password' => fn(string $s) => "#SALT_$s",
+            'password' => fn (string $s) => "#SALT_$s",
         ];
     }
 

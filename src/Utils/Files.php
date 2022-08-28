@@ -22,7 +22,7 @@ final class Files
 
         // filter vendor
         $files = array_filter($files, function (string $path) {
-            return !str_contains($path, 'vendor');
+            return ! str_contains($path, 'vendor');
         });
 
         return array_unique($files);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use Swew\Db\Utils\Files;
 use PDO;
+use Swew\Db\Utils\Files;
 
 final class Migrate
 {
@@ -45,10 +45,7 @@ final class Migrate
         // $callback($migrator);
     }
 
-    public static function getMigrationsRecord(PDO $pdo)
+    public static function getMigrationsRecord(PDO $pdo): void
     {
-
     }
-
-
 }

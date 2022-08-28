@@ -6,7 +6,8 @@ namespace Swew\Db\Parts;
 
 use Swew\Db\Model;
 
-class UserModel extends Model {
+class UserModel extends Model
+{
     public function table(): string
     {
         return 'migrations';
