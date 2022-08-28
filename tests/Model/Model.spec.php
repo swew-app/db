@@ -209,8 +209,15 @@ it('Model [setData]', function () {
     expect($data['name'])->toBe('Jack');
 });
 
-
 it('Model [setCast, getCast]', function () {
 
+})->todo();
+
+it('Model [select]', function () {
+    $user = UserModel::vm()
+        ->select()
+        ->getFirstItem();
+
+    expect($user->name)->toBe('Jon 1');
 });
 

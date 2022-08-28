@@ -194,3 +194,16 @@ $isOk = UserModel::transaction(function () {
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Mike')->where('id', 3)->exec();
 });
 ```
+
+## Query without sql
+
+```php
+ UserModel::vm()
+    ->select('name', 'rating')
+    ->where('rating', '>', 4)
+    ->getFirst();
+    // [
+    //     'name' => 'Leo',
+    //     'rating' => 5,
+    // ],
+```

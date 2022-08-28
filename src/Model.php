@@ -48,23 +48,35 @@ abstract class Model
         $pdo = $this->pdoCurrentQuery ?: self::$pdo;
 
         if (is_null($pdo)) {
-            throw new \LogicException('Please set PDO, use method ::setPDO');
+            throw new LogicException('Please set PDO, use method ::setPDO');
         }
 
         return $pdo;
     }
 
-    public function query(string $sqlQuery, array|Model $data = [])
+    public function getSqlWithTableName(string $sqlQuery): string
     {
         $tables = array_map(fn (string $name) => "[$name]", $this->mapTable());
 
         $tables['[TABLE]'] = $this->getTableName();
 
-        $sql = strtr($sqlQuery, $tables);
+        return strtr($sqlQuery, $tables);
+    }
+
+    public function query(string $sqlQuery, array|Model $data = [])
+    {
+        $sql = $this->getSqlWithTableName($sqlQuery);
 
         $pdo = $this->getPDO();
 
         return new ExecuteQuery($pdo, $sql, $this, $data);
+    }
+
+    public final function count(): ExecuteQuery
+    {
+        $idKey = $this->id();
+        $sql = "SELECT count(`$idKey`) as `count` FROM [TABLE]";
+        return $this->query($sql);
     }
 
     protected function hasTimestamp(): bool
@@ -77,6 +89,10 @@ abstract class Model
         return 'id';
     }
 
+    /**
+     * Возвращаем массив где ключ это алиас,
+     * который нужно заменить на название таблицы
+     */
     protected function mapTable(): array
     {
         return [];
@@ -146,10 +162,19 @@ abstract class Model
         }
     }
 
-    public final function count(): ExecuteQuery
+    public function select(): ExecuteQuery
     {
-        $idKey = $this->id();
-        $sql = "SELECT count(`$idKey`) as `count` FROM [TABLE]";
+        $keys = '*';
+        $columns = func_get_args();
+
+        if (count($columns) > 0) {
+            $keys = array_map(fn (string $key) => "`$key`", $columns);
+            $keys = implode(', ', $keys);
+        }
+
+        $sql = $this->getSqlWithTableName("SELECT $keys FROM [TABLE]");
+
         return $this->query($sql);
     }
+
 }
