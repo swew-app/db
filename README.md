@@ -222,6 +222,7 @@ $user->save();
 ```
 
 ### update
+
 ```php
 $user = new UserModel();
 $user->name = 'Master Splinter';
@@ -232,4 +233,9 @@ $user->email = 's2@mail.xx';
 //     'email' => 's2@mail.xx',
 // ];
 UserModel::vm()->update($user)->where('id', 1)->exec();
+```
+### delete
+
+```php
+UserModel::vm()->delete()->where('id', 1)->exec();
 ```

@@ -249,3 +249,13 @@ it('Model [update]', function () {
     expect($res['name'])->toBe('Master Splinter');
     expect($res['password'])->toBe('#SALT_secret');
 });
+
+it('Model [delete]', function () {
+    $count = UserModel::vm()->count()->where('email', 's2@mail.xx')->getValue();
+    expect($count)->toBe(1);
+
+    UserModel::vm()->delete()->where('id', 1)->exec();
+
+    $count = UserModel::vm()->count()->where('email', 's2@mail.xx')->getValue();
+    expect($count)->toBe(0);
+});

@@ -248,4 +248,11 @@ abstract class Model
 
         return $exq;
     }
+
+    public function delete(): ExecuteQuery
+    {
+        $sql = $this->getSqlWithTableName('DELETE FROM [TABLE]');
+
+        return new ExecuteQuery($this->getPDO(), $sql, $this);
+    }
 }
