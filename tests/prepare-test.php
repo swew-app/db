@@ -17,7 +17,8 @@ function getPDO(bool $isCreateUserTable = false): PDO
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(64) NOT NULL,
             email VARCHAR(255) NOT NULL,
-            password VARCHAR(30)
+            password VARCHAR(30),
+            deleted_at TEXT DEFAULT(NULL)
         )');
     }
 

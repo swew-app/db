@@ -239,3 +239,11 @@ UserModel::vm()->update($user)->where('id', 1)->exec();
 ```php
 UserModel::vm()->delete()->where('id', 1)->exec();
 ```
+### soft delete
+
+For soft delete to work, your table must have a deleted_at field of type DATETIME or (TEXT for SQLite) with a default value of NULL.
+In your model, there must be a softDelete() method that returns true.
+
+```php
+UserModel::vm()->delete()->where('id', 1)->exec();
+```

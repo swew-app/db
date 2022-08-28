@@ -138,31 +138,37 @@ class ExecuteQuery
         $data = $data ?: $this->data ?: [];
         $sql = $this->sql;
         $where = [];
+        $orWhere = [];
 
         if (count($this->where) > 0) {
             foreach ($this->where as $v) {
                 $where[] = $v[0];
                 $data[] = $v[1];
             }
-            $where = [
-                implode(' AND ', $where),
-            ];
         }
 
         if (count($this->orWhere) > 0) {
             foreach ($this->orWhere as $v) {
-                $where[] = $v[0];
+                $orWhere[] = $v[0];
                 $data[] = $v[1];
             }
+
+            $where[] = '('.implode(' OR ', $orWhere).')';
         }
 
-        $sql .= ' '.implode(' OR ', $where);
+        if (count($where) > 0) {
+            $where = [
+                implode(' AND ', $where),
+            ];
+
+            $sql .= ' WHERE ('.implode(' AND ', $where).')';
+        }
 
         if ($this->limit > 0) {
             if ($this->offset > 0) {
-                $sql .= 'LIMIT '.$this->offset.', '.$this->limit;
+                $sql .= ' LIMIT '.$this->offset.', '.$this->limit;
             } else {
-                $sql .= 'LIMIT '.$this->limit;
+                $sql .= ' LIMIT '.$this->limit;
             }
         }
 
@@ -212,7 +218,11 @@ class ExecuteQuery
             throw new \LogicException('Wrong parameters');
         }
 
-        return ["WHERE `$key` $comp ?", $val];
+        if (is_null($val)) {
+            $comp = 'IS ';
+        }
+
+        return ["`$key` $comp ?", $val];
     }
 
     private int $limit = 0;

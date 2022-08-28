@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Swew\Db\Model;
 use Swew\Testing\Model\Stub\UserModel;
+use Swew\Testing\Model\Stub\UserSoftModel;
 
 beforeAll(function () {
     $pdo = getPDO(true);
@@ -111,6 +112,18 @@ it('Model [update WHERE]', function () {
     ]);
 });
 
+it('Model [WHERE]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->where('id', 2)
+        ->where('id', 3)
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE (`id` = ? AND `id` = ?)';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 2, 3]);
+});
+
 it('Model [WHERE OR WHERE]', function () {
     $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
         ->where('id', 2)
@@ -119,10 +132,22 @@ it('Model [WHERE OR WHERE]', function () {
         ->orWhere('id', 5)
         ->toSql();
 
-    $sql = 'SELECT * FROM users WHERE `id` = ? AND WHERE `id` = ? OR WHERE `id` = ? OR WHERE `id` = ?';
+    $sql = 'SELECT * FROM users WHERE (`id` = ? AND `id` = ? AND (`id` = ? OR `id` = ?))';
 
     expect($res['sql'])->toBe($sql);
     expect($res['data'])->toBe(['Mike', 2, 3, 4, 5]);
+});
+
+it('Model [OR WHERE]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->orWhere('id', 4)
+        ->orWhere('id', 5)
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE ((`id` = ? OR `id` = ?))';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 4, 5]);
 });
 
 it('Model [LIMIT OFFSET]', function () {
@@ -251,11 +276,28 @@ it('Model [update]', function () {
 });
 
 it('Model [delete]', function () {
-    $count = UserModel::vm()->count()->where('email', 's2@mail.xx')->getValue();
+    $count = UserModel::vm()->count()->where('id', 1)->getValue();
     expect($count)->toBe(1);
 
     UserModel::vm()->delete()->where('id', 1)->exec();
 
-    $count = UserModel::vm()->count()->where('email', 's2@mail.xx')->getValue();
+    $count = UserModel::vm()->count()->where('id', 1)->getValue();
     expect($count)->toBe(0);
+});
+
+it('Model [softDelete]', function () {
+    $count = UserSoftModel::vm()->count()->where('id', 2)->getValue();
+    expect($count)->toBe(1);
+
+    UserSoftModel::vm()->delete()->where('id', 2)->exec();
+
+    $count = UserSoftModel::vm()->count()->where('id', 2)->getValue();
+    expect($count)->toBe(0);
+
+    $arr = UserSoftModel::vm()->select()->where('id', 2)->get();
+    expect(count($arr))->toBe(0);
+
+    $res = UserSoftModel::vm()->query(UserSoftModel::ALL_USERS)->where('id', 2)->get();
+
+    expect(count($res))->toBe(1);
 });

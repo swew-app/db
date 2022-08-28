@@ -81,12 +81,23 @@ abstract class Model
         $idKey = $this->id();
         $sql = "SELECT count(`$idKey`) as `count` FROM [TABLE]";
 
-        return $this->query($sql);
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
     }
 
     protected function hasTimestamp(): bool
     {
         return true;
+    }
+
+    protected function softDelete(): bool
+    {
+        return false;
     }
 
     protected function id(): string
@@ -200,7 +211,13 @@ abstract class Model
 
         $sql = $this->getSqlWithTableName("SELECT $keys FROM [TABLE]");
 
-        return $this->query($sql);
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
     }
 
     public function save(): ExecuteQuery
@@ -251,7 +268,15 @@ abstract class Model
 
     public function delete(): ExecuteQuery
     {
-        $sql = $this->getSqlWithTableName('DELETE FROM [TABLE]');
+        $sql = 'DELETE FROM [TABLE]';
+
+        if ($this->softDelete()) {
+            return $this->update([
+                'deleted_at' => 'now()',
+            ]);
+        }
+
+        $sql = $this->getSqlWithTableName($sql);
 
         return new ExecuteQuery($this->getPDO(), $sql, $this);
     }
