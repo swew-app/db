@@ -52,7 +52,7 @@ class ExecuteQuery
 
             foreach ($newData as $value) {
                 $sth->execute(
-                    $this->dto->castSetValues($value)
+                    $this->dto->castValues($value, false)
                 );
             }
 
@@ -81,7 +81,12 @@ class ExecuteQuery
     {
         $this->prepareAndExecute();
 
-        return $this->sth->fetchAll(PDO::FETCH_ASSOC);
+        $results = $this->sth->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(
+            fn (mixed $v) => $this->dto->castValues($v, true),
+            $results
+        );
     }
 
     public function getFirst(): array|bool
@@ -90,7 +95,13 @@ class ExecuteQuery
 
         $this->prepareAndExecute();
 
-        return $this->sth->fetch(PDO::FETCH_ASSOC);
+        $result = $this->sth->fetch(PDO::FETCH_ASSOC);
+
+        if (! $result) {
+            return false;
+        }
+
+        return $this->dto->castValues($result, true);
     }
 
     public function getFirstItem(): Model
@@ -198,7 +209,7 @@ class ExecuteQuery
 
         return [
             'sql' => $sql,
-            'data' => $this->dto->castSetValues($data),
+            'data' => $this->dto->castValues($data, false),
         ];
     }
 

@@ -19,13 +19,6 @@ class UserModel extends Model
 
     public string $password = 'secret';
 
-    protected function getCast(): array
-    {
-        return [
-            // 'password' => fn(string $s) => "#SALT_$s",
-        ];
-    }
-
     protected function setCast(): array
     {
         return [

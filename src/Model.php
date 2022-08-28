@@ -160,9 +160,9 @@ abstract class Model
         return $value;
     }
 
-    final public function castSetValues(array $values): array
+    final public function castValues(array $values, bool $isGet): array
     {
-        $casts = $this->setCast();
+        $casts = $isGet ? $this->getCast() : $this->setCast();
 
         foreach ($values as $key => $value) {
             if (isset($casts[$key])) {
@@ -251,7 +251,7 @@ abstract class Model
             $data = $this->getFilteredDataWithoutId($data);
         }
 
-        $data = $this->castSetValues($data);
+        $data = $this->castValues($data, false);
 
         $keys = array_keys($data);
         $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);

@@ -253,7 +253,7 @@ it('Model [transaction]', function () {
     expect($data['name'])->toBe('Test 4');
 });
 
-it('Model [setData]', function () {
+it('Model [setData, getCast]', function () {
     $user = new UserModel();
     $user->name = 'Jack';
     $user->email = 't_34@test.xx';
@@ -262,16 +262,13 @@ it('Model [setData]', function () {
         ->setData($user)
         ->exec();
 
-    $data = UserModel::vm()
+    $data = UserSoftModel::vm() // UserSoftModel - has "getCast" method
         ->query(UserModel::GET_USER)
         ->where('email', 't_34@test.xx')
         ->getFirst();
 
-    expect($data['name'])->toBe('Jack');
+    expect($data['name'])->toBe('JACK');
 });
-
-it('Model [setCast, getCast]', function () {
-})->todo();
 
 it('Model [select]', function () {
     $user = UserModel::vm()

@@ -18,6 +18,13 @@ class UserSoftModel extends Model
         return true;
     }
 
+    protected function getCast(): array
+    {
+        return [
+            'name' => fn (string $v) => strtoupper($v),
+        ];
+    }
+
     // sql
     const ALL_USERS = 'SELECT * FROM [TABLE]';
 }
