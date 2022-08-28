@@ -247,3 +247,35 @@ In your model, there must be a softDelete() method that returns true.
 ```php
 UserModel::vm()->delete()->where('id', 1)->exec();
 ```
+
+### where
+
+```php
+UserModel::vm()->select()->where('id', 1)->exec();
+UserModel::vm()->select()->where('id', '=', 1)->exec();
+UserModel::vm()->select()->where('id', '!=', 1)->exec();
+UserModel::vm()->select()->where('id', '>', 1)->exec();
+UserModel::vm()->select()->where('id', '<', 1)->exec();
+```
+
+### or where
+
+```php
+UserModel::vm()->select()->orWhere('id', 1)->exec();
+UserModel::vm()->select()->orWhere('id', '=', 1)->exec();
+UserModel::vm()->select()->orWhere('id', '!=', 1)->exec();
+UserModel::vm()->select()->orWhere('id', '>', 1)->exec();
+UserModel::vm()->select()->orWhere('id', '<', 1)->exec();
+```
+
+### where in
+
+```php
+UserModel::vm()->select()->whereIn('id', [1, 2, 3])->exec();
+```
+
+### where not in
+
+```php
+UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
+```

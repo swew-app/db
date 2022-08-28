@@ -156,6 +156,30 @@ class ExecuteQuery
             $where[] = '('.implode(' OR ', $orWhere).')';
         }
 
+        if (count($this->whereIn) > 0) {
+            foreach ($this->whereIn as $v) {
+                $valuePlaces = array_fill(0, count($v[1]), '?');
+                $valuePlaces = implode(', ', $valuePlaces);
+                $where[] = "`{$v[0]}` IN ($valuePlaces)";
+
+                foreach ($v[1] as $val) {
+                    $data[] = $val;
+                }
+            }
+        }
+
+        if (count($this->whereNotIn) > 0) {
+            foreach ($this->whereNotIn as $v) {
+                $valuePlaces = array_fill(0, count($v[1]), '?');
+                $valuePlaces = implode(', ', $valuePlaces);
+                $where[] = "`{$v[0]}` NOT IN ($valuePlaces)";
+
+                foreach ($v[1] as $val) {
+                    $data[] = $val;
+                }
+            }
+        }
+
         if (count($where) > 0) {
             $where = [
                 implode(' AND ', $where),
@@ -178,9 +202,15 @@ class ExecuteQuery
         ];
     }
 
+    // region [where]
+
     private array $where = [];
 
     private array $orWhere = [];
+
+    private array $whereIn = [];
+
+    private array $whereNotIn = [];
 
     public function where(): self
     {
@@ -196,6 +226,26 @@ class ExecuteQuery
         $args = func_get_args();
 
         $this->orWhere[] = $this->whereQuery($args);
+
+        return $this;
+    }
+
+    public function whereIn(string $key, array $values): self
+    {
+        if (count($values) === 0) {
+            return $this;
+        }
+        $this->whereIn[] = [$key, $values];
+
+        return $this;
+    }
+
+    public function whereNotIn(string $key, array $values): self
+    {
+        if (count($values) === 0) {
+            return $this;
+        }
+        $this->whereNotIn[] = [$key, $values];
 
         return $this;
     }
@@ -224,6 +274,7 @@ class ExecuteQuery
 
         return ["`$key` $comp ?", $val];
     }
+    // endregion
 
     private int $limit = 0;
 

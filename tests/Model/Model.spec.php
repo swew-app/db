@@ -150,6 +150,42 @@ it('Model [OR WHERE]', function () {
     expect($res['data'])->toBe(['Mike', 4, 5]);
 });
 
+it('Model [WHERE IN]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->whereIn('id', [4, 3])
+        ->whereIn('name', ['Leo', 'Don'])
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE (`id` IN (?, ?) AND `name` IN (?, ?))';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 4, 3, 'Leo', 'Don']);
+});
+
+it('Model [WHERE AND WHERE IN]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->where('id', 4)
+        ->whereIn('name', ['Leo', 'Don'])
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE (`id` = ? AND `name` IN (?, ?))';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 4, 'Leo', 'Don']);
+});
+
+it('Model [WHERE NOT IN]', function () {
+    $res = UserModel::vm()->query(UserModel::GET_USER, ['Mike'])
+        ->whereIn('id', [4, 3])
+        ->whereNotIn('name', ['Leo', 'Don'])
+        ->toSql();
+
+    $sql = 'SELECT * FROM users WHERE (`id` IN (?, ?) AND `name` NOT IN (?, ?))';
+
+    expect($res['sql'])->toBe($sql);
+    expect($res['data'])->toBe(['Mike', 4, 3, 'Leo', 'Don']);
+});
+
 it('Model [LIMIT OFFSET]', function () {
     $res = UserModel::vm()->query(UserModel::GET_USER)
         ->offset(10)
