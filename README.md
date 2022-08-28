@@ -221,3 +221,15 @@ $user->password = 'secret';
 $user->save();
 ```
 
+### update
+```php
+$user = new UserModel();
+$user->name = 'Master Splinter';
+$user->email = 's2@mail.xx';
+// OR
+// $user = [
+//     'name' => 'Master Splinter',
+//     'email' => 's2@mail.xx',
+// ];
+UserModel::vm()->update($user)->where('id', 1)->exec();
+```

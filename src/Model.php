@@ -205,7 +205,6 @@ abstract class Model
 
     public function save(): ExecuteQuery
     {
-        $pdo = $this->getPDO();
         $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
 
         $keys = array_map(fn (string $key) => "`$key`", array_keys($data));
@@ -217,8 +216,36 @@ abstract class Model
         $sqlQuery = "INSERT INTO [TABLE] ($keysString) VALUES ($valueString)";
         $sql = $this->getSqlWithTableName($sqlQuery);
 
+        $pdo = $this->getPDO();
         $exq = new ExecuteQuery($pdo, $sql, $this);
 
         return $exq->exec(array_values($data));
+    }
+
+    public function update(array|Model|null $data = null): ExecuteQuery
+    {
+        if (is_null($data)) {
+            $data = $this;
+        }
+
+        if (! is_array($data)) {
+            $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($data));
+        } else {
+            $data = $this->getFilteredDataWithoutId($data);
+        }
+
+        $data = $this->castSetValues($data);
+
+        $keys = array_keys($data);
+        $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);
+
+        $sql = 'UPDATE [TABLE] SET '.implode(', ', $mappedKeys);
+        $sql = $this->getSqlWithTableName($sql);
+
+        $exq = new ExecuteQuery($this->getPDO(), $sql, $this);
+
+        $exq->setData(array_values($data));
+
+        return $exq;
     }
 }

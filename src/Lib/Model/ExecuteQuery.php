@@ -16,6 +16,8 @@ class ExecuteQuery
 
     private array $data = [];
 
+    private bool $isDone = false;
+
     public function __construct(
         readonly private PDO $pdo,
         private string $sql,
@@ -26,6 +28,11 @@ class ExecuteQuery
     public function id(): mixed
     {
         return $this->dto->getLastId();
+    }
+
+    public function isDone(): bool
+    {
+        return $this->isDone;
     }
 
     public function exec(?array $data = null): self
@@ -249,6 +256,8 @@ class ExecuteQuery
 
         $this->sth = $this->pdo->prepare($sql);
 
-        return $this->sth->execute($newData);
+        $this->isDone = $this->sth->execute($newData);
+
+        return $this->isDone;
     }
 }

@@ -232,3 +232,20 @@ it('Model [save]', function () {
 
     expect($res['name'])->toBe('Splinter');
 });
+
+it('Model [update]', function () {
+    $user = new UserModel();
+    $user->name = 'Master Splinter';
+    $user->email = 's2@mail.xx';
+    // $user = [
+    //     'name' => 'Master Splinter',
+    //     'email' => 's2@mail.xx',
+    // ];
+
+    UserModel::vm()->update($user)->where('id', 1)->exec();
+
+    $res = UserModel::vm()->select('name', 'password')->where('email', 's2@mail.xx')->getFirst();
+
+    expect($res['name'])->toBe('Master Splinter');
+    expect($res['password'])->toBe('#SALT_secret');
+});
