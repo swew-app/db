@@ -221,11 +221,3 @@ $user->password = 'secret';
 $user->save();
 ```
 
-# Tips
-
-Model with constructor
-
-```php
-
-CommentModel::vm('some', 'arguments', 'for', 'CommentModel')->query(...)
-```

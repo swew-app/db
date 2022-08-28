@@ -36,9 +36,8 @@ abstract class Model
 
     public static function vm(): static
     {
-        $args = func_get_args();
         /** @phpstan-ignore-next-line */
-        return new static(...$args);
+        return new static;
     }
 
     private function getTableName(): string
