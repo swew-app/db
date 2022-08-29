@@ -105,6 +105,7 @@ abstract class Model
         return 'id';
     }
 
+    // TODO: ModelUtils
     public function getFilteredDataWithoutId(array $data): array
     {
         $id = $this->id();
@@ -141,23 +142,6 @@ abstract class Model
     protected function setCast(): array
     {
         return [];
-    }
-
-    final public function castGetValue(string $key, mixed $value): mixed
-    {
-        if (is_null(self::$casts)) {
-            self::$casts = $this->getCast();
-        }
-
-        $casts = self::$casts;
-
-        if (isset($casts[$key])) {
-            $fn = $casts[$key];
-
-            return $fn($value);
-        }
-
-        return $value;
     }
 
     final public function castValues(array $values, bool $isGet): array
@@ -291,6 +275,7 @@ abstract class Model
         return new ExecuteQuery($this->getPDO(), $sql, $this);
     }
 
+    // TODO: ModelUtils
     private function addTimestampValues(array &$data, bool $isCreate): void
     {
         $now = date('Y-m-d H:i:s');

@@ -312,10 +312,11 @@ class ExecuteQuery
     private function fillDto(array $value): Model
     {
         $model = clone $this->model;
+        $value = $this->model->castValues($value, true);
 
-        foreach ($value as $key => $value) {
+        foreach ($value as $key => $val) {
             if (isset($model->$key)) {
-                $model->$key = $this->model->castGetValue($key, $value);
+                $model->$key = $val;
             }
         }
 
