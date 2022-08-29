@@ -13,8 +13,6 @@ abstract class Model
 {
     private static string $tablePrefix = '';
 
-    private static ?PDO $pdo = null;
-
     private ?PDO $pdoCurrentConnection = null;
 
     abstract protected function table(): string;
@@ -22,11 +20,6 @@ abstract class Model
     final public static function setTablePrefix(string $tablePrefix): void
     {
         self::$tablePrefix = $tablePrefix;
-    }
-
-    final public static function setPDO(PDO $pdo): void
-    {
-        self::$pdo = $pdo;
     }
 
     final public function setCurrentQueryPDO(PDO $pdo): void
@@ -47,7 +40,7 @@ abstract class Model
 
     private function getPDO(): PDO
     {
-        $pdo = $this->pdoCurrentConnection ?: self::$pdo;
+        $pdo = $this->pdoCurrentConnection ?: ModelConfig::getPDO();
 
         if (is_null($pdo)) {
             throw new LogicException('Please set PDO, use method ::setPDO');
@@ -161,11 +154,8 @@ abstract class Model
     final public function getLastId(): mixed
     {
         $id = $this->id();
-        if (is_null(self::$pdo)) {
-            throw new LogicException();
-        }
 
-        return self::$pdo->lastInsertId($id);
+        return $this->getPDO()->lastInsertId($id);
     }
 
     public static function transaction(callable $callback): bool

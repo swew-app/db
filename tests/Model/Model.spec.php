@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Swew\Db\Model;
+use Swew\Db\ModelConfig;
 use Swew\Testing\Model\Stub\UserModel;
 use Swew\Testing\Model\Stub\UserSoftModel;
 
 beforeAll(function () {
     $pdo = getPDO(true);
-    Model::setPDO($pdo);
+    ModelConfig::setPDO($pdo);
 
     $data = getFakeUsers(2);
 
