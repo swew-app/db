@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Swew\Db\Lib\Model;
 
-use LogicException;
 use PDO;
 use PDOStatement;
 use Swew\Db\Model;
+use LogicException;
 use Swew\Db\Utils\Obj;
 
 class ExecuteQuery
@@ -97,7 +97,7 @@ class ExecuteQuery
 
         $result = $this->sth->fetch(PDO::FETCH_ASSOC);
 
-        if (! $result) {
+        if (!$result) {
             return false;
         }
 
@@ -108,18 +108,18 @@ class ExecuteQuery
     {
         $result = $this->getFirst();
 
-        if (! is_array($result)) {
+        if (!is_array($result)) {
             throw new LogicException('Wrong query for get result');
         }
 
         return $this->fillDto($result);
     }
 
-    public function getItems()
+    public function getItems(): array
     {
         $results = $this->get();
 
-        if (! is_array($results)) {
+        if (!is_array($results)) {
             throw new LogicException('Wrong query for get result');
         }
 
@@ -133,11 +133,11 @@ class ExecuteQuery
     {
         $result = $this->getFirst();
 
-        if (! is_array($result)) {
+        if (!is_array($result)) {
             return null;
         }
 
-        if (! is_null($key)) {
+        if (!is_null($key)) {
             return $result[$key];
         }
 
@@ -164,7 +164,7 @@ class ExecuteQuery
                 $data[] = $v[1];
             }
 
-            $where[] = '('.implode(' OR ', $orWhere).')';
+            $where[] = '(' . implode(' OR ', $orWhere) . ')';
         }
 
         if (count($this->whereIn) > 0) {
@@ -196,14 +196,18 @@ class ExecuteQuery
                 implode(' AND ', $where),
             ];
 
-            $sql .= ' WHERE ('.implode(' AND ', $where).')';
+            $sql .= ' WHERE (' . implode(' AND ', $where) . ')';
+        }
+
+        if (count($this->orderBy) > 0) {
+            $sql .= ' ORDER BY ' . implode(', ', $this->orderBy);
         }
 
         if ($this->limit > 0) {
             if ($this->offset > 0) {
-                $sql .= ' LIMIT '.$this->offset.', '.$this->limit;
+                $sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
             } else {
-                $sql .= ' LIMIT '.$this->limit;
+                $sql .= ' LIMIT ' . $this->limit;
             }
         }
 
@@ -309,6 +313,19 @@ class ExecuteQuery
         return $this;
     }
 
+    private array $orderBy = [];
+
+    public function orderBy(string $key, string $direction = 'ASC'): self
+    {
+        if (!in_array($direction, ['ASC', 'DESC'])) {
+            throw new LogicException('Wrong orderBy direction, use ASC or DESC');
+        }
+
+        $this->orderBy[] = "`$key` $direction";
+
+        return $this;
+    }
+
     private function fillDto(array $value): Model
     {
         $model = clone $this->model;
@@ -329,8 +346,6 @@ class ExecuteQuery
 
         $this->sth = $this->pdo->prepare($sql);
 
-        $this->isDone = $this->sth->execute($newData);
-
-        return $this->isDone;
+        return $this->isDone = $this->sth->execute($newData);
     }
 }

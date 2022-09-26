@@ -43,7 +43,7 @@ abstract class Model
         $pdo = $this->pdoCurrentConnection ?: ModelConfig::getPDO();
 
         if (is_null($pdo)) {
-            throw new LogicException('Please set PDO, use method ::setPDO');
+            throw new LogicException('Please set PDO, use method ModelConfig::setPDO');
         }
 
         return $pdo;
