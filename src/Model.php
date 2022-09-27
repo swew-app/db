@@ -6,9 +6,9 @@ namespace Swew\Db;
 
 use LogicException;
 use PDO;
+use Psr\SimpleCache\CacheInterface;
 use Swew\Db\Lib\Model\ExecuteQuery;
 use Swew\Db\Utils\Obj;
-use Psr\SimpleCache\CacheInterface;
 
 abstract class Model
 {
@@ -34,14 +34,14 @@ abstract class Model
         return new static;
     }
 
-    protected function getCache(): ?CacheInterface
+    protected function getCache(): CacheInterface | bool | null
     {
         return null;
     }
 
     private function getTableName(): string
     {
-        return self::$tablePrefix . $this->table();
+        return self::$tablePrefix.$this->table();
     }
 
     private function getPDO(): PDO
@@ -69,6 +69,14 @@ abstract class Model
         $pdo = $this->getPDO();
         $sql = $this->getSqlWithTableName($sqlQuery);
         $cache = $this->getCache();
+
+        if (is_bool($cache)) {
+            if ($cache === true && ModelConfig::hasDefaultCache()) {
+                $cache = ModelConfig::getDefaultCache();
+            } else {
+                $cache = null;
+            }
+        }
 
         $exq = new ExecuteQuery($pdo, $sql, $this, $cache);
         $exq->setData($data);
@@ -232,7 +240,7 @@ abstract class Model
             $data = $this;
         }
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($data));
         } else {
             $data = $this->getFilteredDataWithoutId($data);
@@ -247,7 +255,7 @@ abstract class Model
         $keys = array_keys($data);
         $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);
 
-        $sql = 'UPDATE [TABLE] SET ' . implode(', ', $mappedKeys);
+        $sql = 'UPDATE [TABLE] SET '.implode(', ', $mappedKeys);
         $sql = $this->getSqlWithTableName($sql);
 
         $exq = new ExecuteQuery($this->getPDO(), $sql, $this);

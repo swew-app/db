@@ -12,7 +12,7 @@ it('Cache [makeKey]', function () {
 });
 
 it('Cache [makeCacheItem,getItemValue]', function () {
-    $data= ['123', 123];
+    $data = ['123', 123];
 
     $item = Cache::makeCacheItem($data);
 
@@ -27,7 +27,7 @@ it('Cache [makeCacheItem,getItemValue]', function () {
 });
 
 it('Cache [makeCacheItem,isExpired:TRUE]', function () {
-    $data= ['123', 123];
+    $data = ['123', 123];
 
     $item = Cache::makeCacheItem($data, -1);
     $res = Cache::isExpired($item);
@@ -36,7 +36,7 @@ it('Cache [makeCacheItem,isExpired:TRUE]', function () {
 });
 
 it('Cache [makeCacheItem,isExpired:FALSE]', function () {
-    $data= ['123', 123];
+    $data = ['123', 123];
 
     $item = Cache::makeCacheItem($data, 10);
     $res = Cache::isExpired($item);
@@ -45,8 +45,7 @@ it('Cache [makeCacheItem,isExpired:FALSE]', function () {
 });
 
 it('Cache [store,get]', function () {
-    $data= ['123', 123];
-
+    $data = ['123', 123];
     $cache = new MemoryCache();
     $key = Cache::makeKey('test');
 
@@ -58,4 +57,28 @@ it('Cache [store,get]', function () {
 
     $res = Cache::get($cache, $key);
     expect($res)->toBe($data);
+});
+
+it('Cache [remember]', function () {
+    $data = 'SomeData';
+    $cache = new MemoryCache();
+    $key = Cache::makeKey('test remember');
+    $countOfCall = 0;
+    $callback = function () use ($data, &$countOfCall) {
+        $countOfCall++;
+
+        return $data;
+    };
+
+    expect($countOfCall)->toBe(0);
+
+    $res = Cache::remember($cache, $key, $callback);
+
+    expect($res)->toBe($data);
+    expect($countOfCall)->toBe(1);
+
+    // Cached call
+    $res = Cache::remember($cache, $key, $callback);
+    expect($res)->toBe($data);
+    expect($countOfCall)->toBe(1);
 });

@@ -11,8 +11,6 @@ beforeAll(function () {
     $pdo = getPDO(true);
 
     ModelConfig::setPDO($pdo);
-    // ModelConfig::setCache(new MemoryCache());
-
     $data = getFakeUsers(2);
 
     UserModel::vm()->query(UserModel::ADD_USER)->execMany($data);
@@ -352,19 +350,16 @@ it('Model [timestamp]', function () {
 
 it('Model [cache]', function () {
     $cache = new MemoryCache();
-    ModelConfig::setCache($cache);
-    // $sql = 'SELECT * FROM users WHERE (`deleted_at` IS ?) ORDER BY RANDOM()';
+    ModelConfig::setDefaultCache($cache);
     $sql = 'SELECT * FROM users';
 
-    expect(count($cache->cache))->toBe(0);
+    expect($cache->cache)->toHaveCount(0);
 
-    $res = UserSoftModel::vm()
+    UserSoftModel::vm()
         ->query($sql)
         ->where('id', 3)
-        // ->cache()
+        ->cache()
         ->getFirst();
 
-    // dd($res);
-
-    // expect(count($cache->cache))->toBe(1);
+    expect($cache->cache)->toHaveCount(1);
 });

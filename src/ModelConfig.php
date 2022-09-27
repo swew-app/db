@@ -29,22 +29,27 @@ final class ModelConfig
         return self::$pdo;
     }
 
-    private static ?CacheInterface $cache = null;
+    private static ?CacheInterface $defaultCache = null;
 
-    public static function setCache(CacheInterface $cache): void
+    public static function hasDefaultCache(): bool
     {
-        if (self::$cache) {
-            throw new LogicException('Cache already exists');
-        }
-        self::$cache = $cache;
+        return (bool) self::$defaultCache;
     }
 
-    public static function getCache(): CacheInterface
+    public static function setDefaultCache(CacheInterface $defaultCache): void
     {
-        if (is_null(self::$cache)) {
+        if (self::$defaultCache) {
+            throw new LogicException('Cache already exists');
+        }
+        self::$defaultCache = $defaultCache;
+    }
+
+    public static function getDefaultCache(): CacheInterface
+    {
+        if (is_null(self::$defaultCache)) {
             throw new LogicException('Cache is not exists');
         }
 
-        return self::$cache;
+        return self::$defaultCache;
     }
 }

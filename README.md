@@ -47,6 +47,11 @@ class UserModel extends Model {
         return 'users';
     }
 
+    protected function getCache(): bool {
+        return true;
+    }
+
+
     // By this key use counts [optional] [default: 'id']
     protected function id(): string {
         return 'id';
@@ -282,3 +287,11 @@ UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
 
 
 # Cache
+
+```php
+UserModel::vm()
+    ->select('name')
+    ->where('id', 3)
+    ->cache(3600) // seconds
+    ->getFirst();
+```

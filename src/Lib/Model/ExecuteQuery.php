@@ -7,11 +7,10 @@ namespace Swew\Db\Lib\Model;
 use LogicException;
 use PDO;
 use PDOStatement;
-use Swew\Db\Model;
-use Swew\Db\Utils\Obj;
-use Swew\Db\ModelConfig;
-use Swew\Db\Utils\CacheUtils;
 use Psr\SimpleCache\CacheInterface;
+use Swew\Db\Model;
+use Swew\Db\Utils\Cache;
+use Swew\Db\Utils\Obj;
 
 class ExecuteQuery
 {
@@ -20,6 +19,12 @@ class ExecuteQuery
     private array $data = [];
 
     private bool $isDone = false;
+
+    private array $cacheConfig = [
+        'hasCache' => false,
+        'key' => '',
+        'expiredSeconds' => 0,
+    ];
 
     public function __construct(
         readonly private PDO $pdo,
@@ -83,9 +88,26 @@ class ExecuteQuery
 
     public function get(): array|bool
     {
-        $this->prepareAndExecute();
+        $self = $this;
 
-        $results = $this->sth->fetchAll(PDO::FETCH_ASSOC);
+        $callback = function () use (&$self) {
+            $self->prepareAndExecute();
+
+            return $self->sth->fetchAll(PDO::FETCH_ASSOC);
+        };
+
+        if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
+            $this->createCacheKey();
+
+            $results = Cache::remember(
+                $this->cache,
+                $this->cacheConfig['key'],
+                $callback,
+                $this->cacheConfig['expiredSeconds']
+            );
+        } else {
+            $results = $callback();
+        }
 
         return array_map(
             fn (mixed $v) => $this->model->castValues($v, true),
@@ -96,10 +118,26 @@ class ExecuteQuery
     public function getFirst(): array|bool
     {
         $this->limit(1);
+        $self = $this;
 
-        $this->prepareAndExecute();
+        $callback = function () use (&$self) {
+            $self->prepareAndExecute();
 
-        $result = $this->sth->fetch(PDO::FETCH_ASSOC);
+            return $self->sth->fetch(PDO::FETCH_ASSOC);
+        };
+
+        if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
+            $this->createCacheKey();
+
+            $result = Cache::remember(
+                $this->cache,
+                $this->cacheConfig['key'],
+                $callback,
+                $this->cacheConfig['expiredSeconds']
+            );
+        } else {
+            $result = $callback();
+        }
 
         if (! $result) {
             return false;
@@ -351,5 +389,24 @@ class ExecuteQuery
         $this->sth = $this->pdo->prepare($sql);
 
         return $this->isDone = $this->sth->execute($newData);
+    }
+
+    private function createCacheKey(): string
+    {
+        ['sql' => $sql, 'data' => $newData] = $this->toSql($this->data);
+
+        return $this->cacheConfig['key'] = Cache::makeKey($sql, $newData);
+    }
+
+    public function cache(int $seconds = 0): self
+    {
+        if (is_null($this->cache)) {
+            throw new LogicException('Set getCache method in "'.get_class($this->model).'"');
+        }
+
+        $this->cacheConfig['expiredSeconds'] = $seconds;
+        $this->cacheConfig['hasCache'] = true;
+
+        return $this;
     }
 }

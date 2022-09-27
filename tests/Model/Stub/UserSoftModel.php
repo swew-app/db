@@ -30,6 +30,11 @@ class UserSoftModel extends Model
         ];
     }
 
+    protected function getCache(): bool
+    {
+        return true;
+    }
+
     // sql
     const ALL_USERS = 'SELECT * FROM [TABLE]';
 }
