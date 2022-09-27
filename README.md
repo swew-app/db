@@ -279,3 +279,6 @@ UserModel::vm()->select()->whereIn('id', [1, 2, 3])->exec();
 ```php
 UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
 ```
+
+
+# Cache

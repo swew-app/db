@@ -3,12 +3,15 @@
 declare(strict_types=1);
 
 use Swew\Db\ModelConfig;
+use Swew\Testing\Model\Stub\MemoryCache;
 use Swew\Testing\Model\Stub\UserModel;
 use Swew\Testing\Model\Stub\UserSoftModel;
 
 beforeAll(function () {
     $pdo = getPDO(true);
+
     ModelConfig::setPDO($pdo);
+    // ModelConfig::setCache(new MemoryCache());
 
     $data = getFakeUsers(2);
 
@@ -345,4 +348,23 @@ it('Model [timestamp]', function () {
     $res = UserSoftModel::vm()->select()->where('name', 'Tim')->getFirst();
 
     expect($res['created_at'])->not->toBe(null);
+});
+
+it('Model [cache]', function () {
+    $cache = new MemoryCache();
+    ModelConfig::setCache($cache);
+    // $sql = 'SELECT * FROM users WHERE (`deleted_at` IS ?) ORDER BY RANDOM()';
+    $sql = 'SELECT * FROM users';
+
+    expect(count($cache->cache))->toBe(0);
+
+    $res = UserSoftModel::vm()
+        ->query($sql)
+        ->where('id', 3)
+        // ->cache()
+        ->getFirst();
+
+    // dd($res);
+
+    // expect(count($cache->cache))->toBe(1);
 });
