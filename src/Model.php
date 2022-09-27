@@ -280,7 +280,6 @@ abstract class Model
         return new ExecuteQuery($this->getPDO(), $sql, $this);
     }
 
-    // TODO: ModelUtils
     private function addTimestampValues(array &$data, bool $isCreate): void
     {
         $now = date('Y-m-d H:i:s');

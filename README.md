@@ -29,6 +29,8 @@ Migrate::down(function (Migrator $table) {
 });
 ```
 
+# Model
+
 ```php
 <?php
 
