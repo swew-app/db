@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Swew\Db\Lib\ColumnSize;
 use Swew\Db\Migrator;
 
 it('Migrator [user table]', function () {
@@ -25,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 PHP_TEXT;
 
     expect($table->getSql())->toBe($expected);
-});
+})->skip();
 
 it('Migrator [drop table]', function () {
     $table = new Migrator();
@@ -33,6 +34,25 @@ it('Migrator [drop table]', function () {
     $table->tableDrop('users');
 
     $expected = 'DROP TABLE `users`';
+
+    expect($table->getSql())->toBe($expected);
+})->skip();
+
+it('Migrator [mysql]', function () {
+    $table = new Migrator('mysql');
+    $table->tableCreate('list');
+
+    $table->number('rating_1', ColumnSize::INT);
+    $table->number('rating_2', 255);
+    $table->number('rating_3', 1024)->nullable();
+
+    $expected = <<<'PHP_TEXT'
+CREATE TABLE IF NOT EXISTS `list` (
+  `rating_1` INT NOT NULL,
+  `rating_2` TINYINT NOT NULL,
+  `rating_3` SMALLINT
+)
+PHP_TEXT;
 
     expect($table->getSql())->toBe($expected);
 });

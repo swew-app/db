@@ -4,28 +4,29 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use LogicException;
 use PDO;
+use LogicException;
+use Swew\Db\Utils\Obj;
+use Swew\Db\ModelConfig;
 use Psr\SimpleCache\CacheInterface;
 use Swew\Db\Lib\Model\ExecuteQuery;
-use Swew\Db\Utils\Obj;
 
 abstract class Model
 {
-    private static string $tablePrefix = '';
-
     private ?PDO $pdoCurrentConnection = null;
 
     abstract protected function table(): string;
 
-    final public static function setTablePrefix(string $tablePrefix): void
-    {
-        self::$tablePrefix = $tablePrefix;
-    }
-
     final public function setCurrentQueryPDO(PDO $pdo): void
     {
         $this->pdoCurrentConnection = $pdo;
+    }
+
+    final public function getDriverType(): string
+    {
+        return $this
+            ->getPDO()
+            ->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
 
     public static function vm(): static
@@ -39,9 +40,9 @@ abstract class Model
         return null;
     }
 
-    private function getTableName(): string
+    final public function getTableName(): string
     {
-        return self::$tablePrefix.$this->table();
+        return ModelConfig::getTablePrefix() . $this->table();
     }
 
     private function getPDO(): PDO
@@ -240,7 +241,7 @@ abstract class Model
             $data = $this;
         }
 
-        if (! is_array($data)) {
+        if (!is_array($data)) {
             $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($data));
         } else {
             $data = $this->getFilteredDataWithoutId($data);
@@ -255,7 +256,7 @@ abstract class Model
         $keys = array_keys($data);
         $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);
 
-        $sql = 'UPDATE [TABLE] SET '.implode(', ', $mappedKeys);
+        $sql = 'UPDATE [TABLE] SET ' . implode(', ', $mappedKeys);
         $sql = $this->getSqlWithTableName($sql);
 
         $exq = new ExecuteQuery($this->getPDO(), $sql, $this);

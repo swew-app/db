@@ -77,7 +77,7 @@ class MigrationColumn
     public function default(mixed $value): self
     {
         $str = Str::valueToString($value);
-        $this->defaultValue = "DEFAULT($str)";
+        $this->defaultValue = "DEFAULT $str";
 
         return $this;
     }

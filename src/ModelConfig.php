@@ -52,4 +52,16 @@ final class ModelConfig
 
         return self::$defaultCache;
     }
+
+    private static string $tablePrefix = '';
+
+    public static function setTablePrefix(string $tablePrefix): void
+    {
+        self::$tablePrefix = $tablePrefix;
+    }
+
+    public static function getTablePrefix(): string
+    {
+        return self::$tablePrefix;
+    }
 }
