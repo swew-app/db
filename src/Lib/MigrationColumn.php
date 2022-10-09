@@ -20,6 +20,8 @@ class MigrationColumn
 
     private string $defaultValue = '';
 
+    private string $suffix = '';
+
     public function __construct(
         private readonly string $columnName
     ) {
@@ -32,6 +34,10 @@ class MigrationColumn
 
         $str[] = "`{$this->columnName}`";
         $str[] = $this->type;
+
+        if (! empty($this->suffix)) {
+            $str[] = $this->suffix;
+        }
 
         if (! empty($this->defaultValue)) {
             $str[] = $this->defaultValue;
@@ -58,6 +64,11 @@ class MigrationColumn
     public function setType(string $type): void
     {
         $this->type = $type;
+    }
+
+    public function setSuffix(string $suffix): void
+    {
+        $this->suffix = $suffix;
     }
 
     public function nullable(): self

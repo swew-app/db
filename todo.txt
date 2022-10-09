@@ -6,7 +6,7 @@ TECHNICAL:
     softDeletesTz
     softDeletes
 
-NUMBER:
+NUMBER: X
     bigIncrements
     bigInteger
     decimal
@@ -21,6 +21,9 @@ NUMBER:
     unsignedMediumInteger
     unsignedSmallInteger
     unsignedTinyInteger
+    smallIncrements
+    smallInteger
+    tinyIncrements
 
 TEXT:
     longText
@@ -69,7 +72,4 @@ OTHER:
     polygon
     rememberToken
     set
-    smallIncrements
-    smallInteger
-    ? tinyIncrements
 

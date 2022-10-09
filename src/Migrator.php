@@ -107,11 +107,11 @@ final class Migrator
         $this->addLine($idSql);
     }
 
-    public function number(string $name, int|ColumnSize $size = 4294967295, ?int $decimal = null): MigrationColumn
+    public function number(string $name, ColumnSize $size, int $precision = 0, int $scale = 0): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::NUMBER, $size, $decimal);
+        $type = $this->dialect()->getType(ColumnType::NUMBER, $size, $precision, $scale);
 
         $column->setType($type);
 
@@ -119,6 +119,111 @@ final class Migrator
 
         return $column;
     }
+
+    //region [NUMBER]
+    public function bigIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::BIGINT);
+        $column->setSuffix('AUTO_INCREMENT');
+        return $column;
+    }
+
+    public function bigInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::BIGINT);
+    }
+
+    public function decimal(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::DECIMAL, $precision, $scale);
+    }
+
+    public function double(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::DOUBLE, $precision, $scale);
+    }
+
+    public function float(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::FLOAT, $precision, $scale);
+    }
+
+    public function integer(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::INT);
+    }
+
+    public function smallInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::SMALLINT);
+    }
+
+    public function smallIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::SMALLINT);
+        $column->setSuffix('AUTO_INCREMENT');
+        return $column;
+    }
+
+    public function mediumInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::MEDIUMINT);
+    }
+
+    public function tinyInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::TINYINT);
+    }
+
+    public function tinyIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::TINYINT);
+        $column->setSuffix('AUTO_INCREMENT');
+        return $column;
+    }
+
+    public function unsignedBigInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::BIGINT);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+
+    public function unsignedDecimal(string $name, int $scale = 2): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::DECIMAL);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+
+    public function unsignedInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::INT);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+
+    public function unsignedMediumInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::MEDIUMINT);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+
+    public function unsignedSmallInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::SMALLINT);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+
+    public function unsignedTinyInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::TINYINT);
+        $column->setSuffix('UNSIGNED');
+        return $column;
+    }
+    //endregion
 
     //region [TEXT]
     public function char(string $name, int $length = 1): MigrationColumn

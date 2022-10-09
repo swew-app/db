@@ -67,7 +67,7 @@ class Migrate
             $table->tableCreate(MigrationModel::vm()->getTableName());
             $table->id();
             $table->string('migration_file');
-            $table->int('batch');
+            $table->integer('batch');
             $table->timestamp();
 
             MigrationModel::vm()->query($table->getSql())->exec();

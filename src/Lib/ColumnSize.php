@@ -20,6 +20,7 @@ enum ColumnSize
     case BIGINT;
     //
     case DECIMAL;
+    case DOUBLE;
     case FLOAT;
     // range: 1:64
     case BIT;

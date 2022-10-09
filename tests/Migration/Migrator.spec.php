@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Swew\Db\Lib\ColumnSize;
 use Swew\Db\Migrator;
 
 it('Migrator [user table]', function () {
@@ -38,19 +37,47 @@ it('Migrator [drop table]', function () {
     expect($table->getSql())->toBe($expected);
 })->skip();
 
-it('Migrator [mysql]', function () {
+it('Migrator [mysql numbers]', function () {
     $table = new Migrator('mysql');
     $table->tableCreate('list');
 
-    $table->number('rating_1', ColumnSize::INT);
-    $table->number('rating_2', 255);
-    $table->number('rating_3', 1024)->nullable();
+    $table->bigIncrements('bigIncrements_col');
+    $table->bigInteger('bigInteger_col');
+    $table->decimal('decimal_col', 5, 2);
+    $table->double('double_col', 4, 3);
+    $table->float('float_col', 3, 4);
+    $table->integer('integer_col');
+    $table->mediumInteger('mediumInteger_col');
+    $table->tinyInteger('tinyInteger_col');
+    $table->unsignedBigInteger('unsignedBigInteger_col');
+    $table->unsignedDecimal('unsignedDecimal_col');
+    $table->unsignedInteger('unsignedInteger_col');
+    $table->unsignedMediumInteger('unsignedMediumInteger_col');
+    $table->unsignedSmallInteger('unsignedSmallInteger_col');
+    $table->unsignedTinyInteger('unsignedTinyInteger_col');
+    $table->smallIncrements('smallIncrements_col');
+    $table->smallInteger('smallInteger_col');
+    $table->tinyIncrements('tinyIncrements_col');
 
     $expected = <<<'PHP_TEXT'
 CREATE TABLE IF NOT EXISTS `list` (
-  `rating_1` INT NOT NULL,
-  `rating_2` TINYINT NOT NULL,
-  `rating_3` SMALLINT
+  `bigIncrements_col` BIGINT AUTO_INCREMENT NOT NULL,
+  `bigInteger_col` BIGINT NOT NULL,
+  `decimal_col` DECIMAL(5, 2) NOT NULL,
+  `double_col` DOUBLE(4, 3) NOT NULL,
+  `float_col` FLOAT(3, 4) NOT NULL,
+  `integer_col` INT NOT NULL,
+  `mediumInteger_col` MEDIUMINT NOT NULL,
+  `tinyInteger_col` TINYINT NOT NULL,
+  `unsignedBigInteger_col` BIGINT UNSIGNED NOT NULL,
+  `unsignedDecimal_col` DECIMAL(0, 0) UNSIGNED NOT NULL,
+  `unsignedInteger_col` INT UNSIGNED NOT NULL,
+  `unsignedMediumInteger_col` MEDIUMINT UNSIGNED NOT NULL,
+  `unsignedSmallInteger_col` SMALLINT UNSIGNED NOT NULL,
+  `unsignedTinyInteger_col` TINYINT UNSIGNED NOT NULL,
+  `smallIncrements_col` SMALLINT AUTO_INCREMENT NOT NULL,
+  `smallInteger_col` SMALLINT NOT NULL,
+  `tinyIncrements_col` TINYINT AUTO_INCREMENT NOT NULL
 )
 PHP_TEXT;
 

@@ -10,37 +10,27 @@ use Swew\Db\Lib\ColumnType;
 
 class BaseDialect
 {
-    public function getType(ColumnType $type, int|ColumnSize $size, ?int $decimal = null): string
+    public function getType(ColumnType $type, ColumnSize $size, int $precision = 0, int $scale = 0): string
     {
         if ($type === ColumnType::NUMBER) {
-            return $this->getNumberType($size, $decimal);
+            return $this->getNumberType($size, $precision, $scale);
         }
 
         throw new LogicException('[BaseDialect] Wrong type is passed');
     }
 
-    private function getNumberType(int|ColumnSize $size, ?int $decimal = null): string
+    private function getNumberType(ColumnSize $size, int $precision, int $scale): string
     {
-        if (!is_null($decimal)) {
-            return "FLOAT($size, $decimal)";
-        }
-
-        if (is_int($size)) {
-            return match (true) {
-                $size <= 255 => 'TINYINT',
-                $size <= 65535 => 'SMALLINT',
-                $size <= 16777215 => 'MEDIUMINT',
-                $size <= 4294967295 => 'INT',
-                true => 'BIGINT',
-            };
-        }
-
         return match ($size) {
             ColumnSize::TINYINT => 'TINYINT',
             ColumnSize::SMALLINT => 'SMALLINT',
             ColumnSize::MEDIUMINT => 'MEDIUMINT',
             ColumnSize::INT => 'INT',
             ColumnSize::BIGINT => 'BIGINT',
+
+            ColumnSize::DECIMAL => "DECIMAL($precision, $scale)",
+            ColumnSize::DOUBLE => "DOUBLE($precision, $scale)",
+            ColumnSize::FLOAT => "FLOAT($precision, $scale)",
             default => throw new LogicException('[BaseDialect] Wrong type is passed'),
         };
     }
