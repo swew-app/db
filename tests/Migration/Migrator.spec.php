@@ -82,4 +82,27 @@ CREATE TABLE IF NOT EXISTS `list` (
 PHP_TEXT;
 
     expect($table->getSql())->toBe($expected);
+})->skip();
+
+it('Migrator [mysql date]', function () {
+    $table = new Migrator('mysql');
+    $table->tableCreate('list');
+
+    $table->dateTime('dateTime_col');
+    $table->date('date_col');
+    $table->time('time_col');
+    $table->timestamp('timestamp_col');
+    $table->year('year_col');
+
+    $expected = <<<'PHP_TEXT'
+CREATE TABLE IF NOT EXISTS `list` (
+  `dateTime_col` DATETIME NOT NULL,
+  `date_col` DATE NOT NULL,
+  `time_col` TIME NOT NULL,
+  `timestamp_col` TIMESTAMP NOT NULL,
+  `year_col` YEAR NOT NULL
+)
+PHP_TEXT;
+
+    expect($table->getSql())->toBe($expected);
 });

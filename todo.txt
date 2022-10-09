@@ -32,24 +32,20 @@ TEXT:
     string
     text
     tinyText
+    char
+    enum
 
 DATE:
-    dateTimeTz
     dateTime
     date
-    timeTz
     time
-    timestampTz
     timestamp
-    timestampsTz
     timestamps
     year
 
 OTHER:
     binary
     boolean
-    char
-    enum
     foreignId
     foreignIdFor
     foreignUuid

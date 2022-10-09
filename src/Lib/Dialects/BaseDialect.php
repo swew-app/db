@@ -16,6 +16,11 @@ class BaseDialect
             return $this->getNumberType($size, $precision, $scale);
         }
 
+        if ($type === ColumnType::DATE) {
+            return $this->getDateType($size);
+        }
+
+
         throw new LogicException('[BaseDialect] Wrong type is passed');
     }
 
@@ -31,6 +36,18 @@ class BaseDialect
             ColumnSize::DECIMAL => "DECIMAL($precision, $scale)",
             ColumnSize::DOUBLE => "DOUBLE($precision, $scale)",
             ColumnSize::FLOAT => "FLOAT($precision, $scale)",
+            default => throw new LogicException('[BaseDialect] Wrong type is passed'),
+        };
+    }
+
+    private function getDateType(ColumnSize $size): string
+    {
+        return match ($size) {
+            ColumnSize::DATE => 'DATE',
+            ColumnSize::TIME => 'TIME',
+            ColumnSize::DATETIME => 'DATETIME',
+            ColumnSize::TIMESTAMP => 'TIMESTAMP',
+            ColumnSize::YEAR => 'YEAR',
             default => throw new LogicException('[BaseDialect] Wrong type is passed'),
         };
     }

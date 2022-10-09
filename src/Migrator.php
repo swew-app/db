@@ -107,7 +107,8 @@ final class Migrator
         $this->addLine($idSql);
     }
 
-    public function number(string $name, ColumnSize $size, int $precision = 0, int $scale = 0): MigrationColumn
+    //region [NUMBER]
+    private function number(string $name, ColumnSize $size, int $precision = 0, int $scale = 0): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -120,7 +121,6 @@ final class Migrator
         return $column;
     }
 
-    //region [NUMBER]
     public function bigIncrements(string $name): MigrationColumn
     {
         $column = $this->number($name, ColumnSize::BIGINT);
@@ -225,6 +225,63 @@ final class Migrator
     }
     //endregion
 
+    //region [DATE]
+    public function dateTime(string $name): void
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::DATETIME);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+    }
+
+    public function date(string $name): void
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::DATE);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+    }
+
+    public function time(string $name): void
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::TIME);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+    }
+
+    public function timestamp(string $name): void
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::TIMESTAMP);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+    }
+
+    public function year(string $name): void
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::YEAR);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+    }
+    //endregion
+
     //region [TEXT]
     public function char(string $name, int $length = 1): MigrationColumn
     {
@@ -261,7 +318,7 @@ final class Migrator
     //endregion
 
     //region [TIMESTAMP]
-    public function timestamp(): void
+    public function timestamps(): void
     {
         $column = new MigrationColumn('created_at');
         $column->setType('datetime');
@@ -277,7 +334,6 @@ final class Migrator
         }
         $this->addLine($column);
     }
-
     //endregion
 
     private function dialect(): BaseDialect
