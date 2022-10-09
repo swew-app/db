@@ -6,7 +6,6 @@ namespace Swew\Db;
 
 use LogicException;
 use Swew\Db\Lib\ColumnSize;
-use Swew\Db\Lib\ColumnType;
 use Swew\Db\Lib\Dialects\BaseDialect;
 use Swew\Db\Lib\Dialects\MysqlDialect;
 use Swew\Db\Lib\Dialects\SqlLiteDialect;
@@ -99,7 +98,7 @@ final class Migrator
     public function id(string $name = 'id'): void
     {
         $idSql = match ($this->type) {
-            'mysql' => "`$name` INT PRIMARY KEY AUTO_INCREMENT",
+            'mysql' => "`$name` INT SERIAL",
             'pgsql' => "`$name` serial PRIMARY KEY",
             'sqlite' => "`$name` INTEGER PRIMARY KEY AUTOINCREMENT",
         };
@@ -112,7 +111,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::NUMBER, $size, $precision, $scale);
+        $type = $this->dialect()->getNumberType($size, $precision, $scale);
 
         $column->setType($type);
 
@@ -230,7 +229,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::DATETIME);
+        $type = $this->dialect()->getDateType(ColumnSize::DATETIME);
 
         $column->setType($type);
 
@@ -241,7 +240,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::DATE);
+        $type = $this->dialect()->getDateType(ColumnSize::DATE);
 
         $column->setType($type);
 
@@ -252,7 +251,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::TIME);
+        $type = $this->dialect()->getDateType(ColumnSize::TIME);
 
         $column->setType($type);
 
@@ -263,7 +262,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::TIMESTAMP);
+        $type = $this->dialect()->getDateType(ColumnSize::TIMESTAMP);
 
         $column->setType($type);
 
@@ -274,7 +273,7 @@ final class Migrator
     {
         $column = new MigrationColumn($name);
 
-        $type = $this->dialect()->getType(ColumnType::DATE, ColumnSize::YEAR);
+        $type = $this->dialect()->getDateType(ColumnSize::YEAR);
 
         $column->setType($type);
 
@@ -334,6 +333,7 @@ final class Migrator
         }
         $this->addLine($column);
     }
+
     //endregion
 
     private function dialect(): BaseDialect

@@ -6,25 +6,10 @@ namespace Swew\Db\Lib\Dialects;
 
 use LogicException;
 use Swew\Db\Lib\ColumnSize;
-use Swew\Db\Lib\ColumnType;
 
 class BaseDialect
 {
-    public function getType(ColumnType $type, ColumnSize $size, int $precision = 0, int $scale = 0): string
-    {
-        if ($type === ColumnType::NUMBER) {
-            return $this->getNumberType($size, $precision, $scale);
-        }
-
-        if ($type === ColumnType::DATE) {
-            return $this->getDateType($size);
-        }
-
-
-        throw new LogicException('[BaseDialect] Wrong type is passed');
-    }
-
-    private function getNumberType(ColumnSize $size, int $precision, int $scale): string
+    public function getNumberType(ColumnSize $size, int $precision, int $scale): string
     {
         return match ($size) {
             ColumnSize::TINYINT => 'TINYINT',
@@ -40,7 +25,19 @@ class BaseDialect
         };
     }
 
-    private function getDateType(ColumnSize $size): string
+    public function getDateType(ColumnSize $size): string
+    {
+        return match ($size) {
+            ColumnSize::DATE => 'DATE',
+            ColumnSize::TIME => 'TIME',
+            ColumnSize::DATETIME => 'DATETIME',
+            ColumnSize::TIMESTAMP => 'TIMESTAMP',
+            ColumnSize::YEAR => 'YEAR',
+            default => throw new LogicException('[BaseDialect] Wrong type is passed'),
+        };
+    }
+
+    public function getStringType(ColumnSize $size): string
     {
         return match ($size) {
             ColumnSize::DATE => 'DATE',
