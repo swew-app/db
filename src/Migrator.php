@@ -98,8 +98,8 @@ final class Migrator
     public function id(string $name = 'id'): void
     {
         $idSql = match ($this->type) {
-            'mysql' => "`$name` INT SERIAL",
-            'pgsql' => "`$name` serial PRIMARY KEY",
+            'mysql' => "`$name` SERIAL",
+            'pgsql' => "`$name` INT PRIMARY KEY AUTO_INCREMENT,",
             'sqlite' => "`$name` INTEGER PRIMARY KEY AUTOINCREMENT",
         };
 

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Swew\Db\Migrator;
 
-it('Migrator [user table mysql]', function () {
-    $table = new Migrator('mysql');
+$types = ['mysql', 'sqlite'];
+
+it('Migrator [user table mysql]', function (string $type) {
+    $table = new Migrator($type);
 
     $table->tableCreate('users');
     $table->id();
@@ -14,19 +16,32 @@ it('Migrator [user table mysql]', function () {
     $table->string('password', 64)->default('p@$$');
     $table->integer('rating')->nullable();
 
-    // `id` INT PRIMARY KEY AUTO_INCREMENT,
-    $expected = <<<'PHP_TEXT'
+    if ($type === 'mysql') {
+        $expected = <<<'PHP_TEXT'
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` INT SERIAL,
+  `id` SERIAL,
   `name` VARCHAR(255) UNIQUE NOT NULL,
   `login` VARCHAR(64) UNIQUE NOT NULL,
   `password` VARCHAR(64) DEFAULT('p@$$') NOT NULL,
   `rating` INT
 )
 PHP_TEXT;
+    }
+
+    if ($type === 'sqlite') {
+        $expected = <<<'PHP_TEXT'
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name` VARCHAR(255) UNIQUE NOT NULL,
+  `login` VARCHAR(64) UNIQUE NOT NULL,
+  `password` VARCHAR(64) DEFAULT('p@$$') NOT NULL,
+  `rating` INT
+)
+PHP_TEXT;
+    }
 
     expect($table->getSql())->toBe($expected);
-})->only();
+})->with($types);
 
 it('Migrator [drop table]', function () {
     $table = new Migrator('mysql');
@@ -38,8 +53,8 @@ it('Migrator [drop table]', function () {
     expect($table->getSql())->toBe($expected);
 });
 
-it('Migrator [mysql numbers]', function () {
-    $table = new Migrator('mysql');
+it('Migrator [numbers]', function (string $type) {
+    $table = new Migrator($type);
     $table->tableCreate('list');
 
     $table->bigIncrements('bigIncrements_col');
@@ -60,7 +75,8 @@ it('Migrator [mysql numbers]', function () {
     $table->smallInteger('smallInteger_col');
     $table->tinyIncrements('tinyIncrements_col');
 
-    $expected = <<<'PHP_TEXT'
+    if ($type === 'mysql' || $type === 'sqlite') {
+        $expected = <<<'PHP_TEXT'
 CREATE TABLE IF NOT EXISTS `list` (
   `bigIncrements_col` BIGINT AUTO_INCREMENT NOT NULL,
   `bigInteger_col` BIGINT NOT NULL,
@@ -81,9 +97,10 @@ CREATE TABLE IF NOT EXISTS `list` (
   `tinyIncrements_col` TINYINT AUTO_INCREMENT NOT NULL
 )
 PHP_TEXT;
+    }
 
     expect($table->getSql())->toBe($expected);
-});
+})->with($types);
 
 it('Migrator [mysql date]', function () {
     $table = new Migrator('mysql');
@@ -108,8 +125,8 @@ PHP_TEXT;
     expect($table->getSql())->toBe($expected);
 });
 
-it('Migrator [mysql string]', function () {
-    $table = new Migrator('mysql');
+it('Migrator [mysql string]', function (string $types) {
+    $table = new Migrator($types);
     $table->tableCreate('list');
 
     $table->string('string_col');
@@ -121,7 +138,7 @@ it('Migrator [mysql string]', function () {
 
     $expected = <<<'PHP_TEXT'
 CREATE TABLE IF NOT EXISTS `list` (
-  `string_col` TEXT NOT NULL,
+  `string_col` VARCHAR(255) NOT NULL,
   `longText_col` LONGTEXT NOT NULL,
   `mediumText_col` MEDIUMTEXT NOT NULL,
   `text_col` TEXT NOT NULL,
@@ -131,4 +148,4 @@ CREATE TABLE IF NOT EXISTS `list` (
 PHP_TEXT;
 
     expect($table->getSql())->toBe($expected);
-});
+})->with($types);

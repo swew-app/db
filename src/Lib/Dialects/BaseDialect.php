@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Swew\Db\Lib\Dialects;
@@ -9,7 +8,7 @@ use Swew\Db\Lib\ColumnSize;
 
 class BaseDialect
 {
-    public function getNumberType(ColumnSize $size, int $precision, int $scale): string
+     public function getNumberType(ColumnSize $size, int $precision, int $scale): string
     {
         return match ($size) {
             ColumnSize::TINYINT => 'TINYINT',
