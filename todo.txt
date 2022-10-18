@@ -26,10 +26,9 @@ NUMBER: X
     tinyIncrements
 
 TEXT:
+    string
     longText
     mediumText
-    multiLineString
-    string
     text
     tinyText
     char

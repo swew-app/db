@@ -282,33 +282,78 @@ final class Migrator
     //endregion
 
     //region [TEXT]
-    public function char(string $name, int $length = 1): MigrationColumn
+    public function string(string $name, int $len = 255): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("CHAR($length)");
+        $type = $this->dialect()->getStringType(ColumnSize::VARCHAR, $len);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
 
-    public function string(string $name, int $length = 255): MigrationColumn
+    public function longText(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("VARCHAR($length)");
+        $type = $this->dialect()->getStringType(ColumnSize::LONGTEXT);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
 
-    public function text(string $name, int $length = 255): MigrationColumn
+    public function mediumText(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("TEXT($length)");
+        $type = $this->dialect()->getStringType(ColumnSize::MEDIUMTEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function text(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::TEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function tinyText(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::TINYTEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function char(string $name, int $len = 0): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::CHAR, $len);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
