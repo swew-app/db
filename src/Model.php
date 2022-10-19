@@ -249,6 +249,8 @@ abstract class Model
             $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
         }
 
+        $data = $this->castValues($data, false);
+
         if ($this->hasTimestamp()) {
             $this->addTimestampValues($data, true);
         }
@@ -305,7 +307,7 @@ abstract class Model
 
         if ($this->softDelete()) {
             return $this->update([
-                'deleted_at' => 'now()',
+                'deleted_at' => date('Y-m-d H:i:s'),
             ]);
         }
 

@@ -53,13 +53,13 @@ class ExecuteQuery
 
     public function execMany(?array $data = null): bool
     {
-        ['sql' => $sql, 'data' => $newData] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql, 'data' => $castedData] = $this->toSql($data ?: $this->data);
 
         try {
             $this->pdo->beginTransaction();
             $sth = $this->pdo->prepare($sql);
 
-            foreach ($newData as $value) {
+            foreach ($castedData as $value) {
                 $sth->execute(
                     $this->model->castValues($value, false)
                 );
@@ -384,18 +384,18 @@ class ExecuteQuery
 
     private function prepareAndExecute(?array $data = null): bool
     {
-        ['sql' => $sql, 'data' => $newData] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql, 'data' => $castedData] = $this->toSql($data ?: $this->data);
 
         $this->sth = $this->pdo->prepare($sql);
 
-        return $this->isDone = $this->sth->execute($newData);
+        return $this->isDone = $this->sth->execute($castedData);
     }
 
     private function createCacheKey(): string
     {
-        ['sql' => $sql, 'data' => $newData] = $this->toSql($this->data);
+        ['sql' => $sql, 'data' => $castedData] = $this->toSql($this->data);
 
-        return $this->cacheConfig['key'] = Cache::makeKey($sql, $newData);
+        return $this->cacheConfig['key'] = Cache::makeKey($sql, $castedData);
     }
 
     public function cache(int $seconds = 0): self
