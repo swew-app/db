@@ -36,12 +36,12 @@
     },
     "require": {
         "php": ">=8.1",
-        "psr/simple-cache": "^3.0",
-        "swew/dd": "^1.0"
+        "psr/simple-cache": "^3.0"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
         "phpstan/phpstan": "^1.8",
+        "swew/dd": "^1.0",
         "swew/test": "^1.0",
         "vimeo/psalm": "^4.24"
     },
