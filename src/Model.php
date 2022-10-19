@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use LogicException;
 use PDO;
 use Psr\SimpleCache\CacheInterface;
 use Swew\Db\Lib\Model\ExecuteQuery;
@@ -46,13 +45,7 @@ abstract class Model
 
     private function getPDO(): PDO
     {
-        $pdo = $this->pdoCurrentConnection ?: ModelConfig::getPDO();
-
-        if (is_null($pdo)) {
-            throw new LogicException('Please set PDO, use method ModelConfig::setPDO');
-        }
-
-        return $pdo;
+        return $this->pdoCurrentConnection ?: ModelConfig::getPDO();
     }
 
     public function getSqlWithTableName(string $sqlQuery): string

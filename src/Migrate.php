@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use PDO;
 use Swew\Db\Parts\MigrationModel;
 use Swew\Db\Utils\Files;
 
@@ -39,11 +38,11 @@ class Migrate
      * [x] получаемданный из таблицы миграций, если такой нет, то создаем ее
      * [x] фильтруем названия файлов, относительно уже совершенных миграций сохраненных в БД
      * [x] проходим по файлам и выбираем UP/DOWN колбеки в очередь
-     * [ ] создаем строку запись для совершении миграции в БД и добавляем ее в очередь
-     * [ ] делаем транзакцию на совершение миграций
-     * [ ] создаем запись в таблице миграций
+     * [x] создаем строку запись для совершении миграции в БД и добавляем ее в очередь
+     * [x] делаем транзакцию на совершение миграций
+     * [x] создаем запись в таблице миграций
      */
-    public static function run(string $filePattern, bool $isUp, PDO $pdo): void
+    public static function run(string $filePattern, bool $isUp): void
     {
         self::$migratedFileNames = [];
 

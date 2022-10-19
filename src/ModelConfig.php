@@ -24,8 +24,12 @@ final class ModelConfig
         self::$pdo = $pdo;
     }
 
-    public static function getPDO(): PDO|null
+    public static function getPDO(): PDO
     {
+        if (is_null(self::$pdo)) {
+            throw new LogicException('Please set PDO, use method ModelConfig::setPDO');
+        }
+
         return self::$pdo;
     }
 

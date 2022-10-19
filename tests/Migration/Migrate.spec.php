@@ -12,7 +12,7 @@ beforeAll(function () {
 });
 
 it('Migrate [add files]', function () {
-    Migrate::run(__DIR__.'/stub/**.php', true, ModelConfig::getPDO());
+    Migrate::run(__DIR__.'/stub/**.php', true);
 
     $countOfMigrationFiles = MigrationModel::vm()->count()->getValue();
     expect($countOfMigrationFiles)->toBe(2);

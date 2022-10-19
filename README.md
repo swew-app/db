@@ -29,6 +29,28 @@ Migrate::down(function (Migrator $table) {
 });
 ```
 
+## Run migration
+
+```php
+<?php
+
+use PDO;
+use Swew\Db\{Migrate,ModelConfig};
+
+// PDO connection
+$pdo = new PDO('sqlite:' . __DIR__ . '/database.sqlite');
+ModelConfig::setPDO($pdo);
+
+// "**" - is alias for sub folders
+$filePattern = __DIR__ . '/migrations/**.php';
+// Run "UP" migrations
+$isUpMigration = true;
+
+Migrate::run($filePattern, $isUpMigration);
+```
+
+---
+
 # Model
 
 ```php

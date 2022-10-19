@@ -11,6 +11,7 @@ function getPDO(bool $isCreateUserTable = false): PDO
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ];
     $pdo = new PDO('sqlite::memory:', 'root', 'password', $options);
+//    $pdo = new PDO('sqlite:' . __DIR__ . '/test_db.sqlite', 'root', 'password', $options);
 
     if ($isCreateUserTable) {
         $pdo->exec('CREATE TABLE IF NOT EXISTS users (
