@@ -166,7 +166,7 @@ abstract class Model
         return $this->getPDO()->lastInsertId($id);
     }
 
-    public static function transaction(callable $callback): bool
+    public static function transaction(callable $callback, bool $showException = false): bool
     {
         $pdo = self::vm()->getPDO();
 
@@ -177,6 +177,9 @@ abstract class Model
 
             return true;
         } catch (\Exception $e) {
+            if ($showException) {
+                throw $e;
+            }
             return false;
         }
     }

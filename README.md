@@ -26,9 +26,9 @@ Migrate::up(function (Migrator $table) {
     $table->string('name')->unique();
     $table->string('login', 64)->unique()->index();
     $table->string('password', 64)->default('123456');
-    $table->text('password')->fulltext();
-    $table->int('rating')->nullable();
-    $table->timestamp();
+    $table->text('description')->fulltext();
+    $table->integer('rating')->nullable();
+    $table->timestamps();
 });
 
 Migrate::down(function (Migrator $table) {
@@ -41,8 +41,10 @@ Migrate::down(function (Migrator $table) {
 ```php
 <?php
 
-use PDO;
 use Swew\Db\{Migrate,ModelConfig};
+
+// path to autoload file
+require __DIR__ . '/../vendor/autoload.php';
 
 // PDO connection
 $pdo = new PDO('sqlite:' . __DIR__ . '/database.sqlite');

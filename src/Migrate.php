@@ -34,15 +34,15 @@ class Migrate
     }
 
     /**
-     * [x] находим файлы миграции по шаблону
-     * [x] получаемданный из таблицы миграций, если такой нет, то создаем ее
-     * [x] фильтруем названия файлов, относительно уже совершенных миграций сохраненных в БД
-     * [x] проходим по файлам и выбираем UP/DOWN колбеки в очередь
-     * [x] создаем строку запись для совершении миграции в БД и добавляем ее в очередь
-     * [x] делаем транзакцию на совершение миграций
-     * [x] создаем запись в таблице миграций
+     * [x] find migration files by pattern
+     * [x] retrieve data from the migration table, if it does not exist, we create it
+     * [x] filter file names relative to the migrations already made in the database
+     * [x] go through files and select UP/DOWN columns in the queue
+     * [x] create row entry for migration in database and add it to queue
+     * [x] make a transaction for the migration
+     * [x] create an entry in the migration table
      */
-    public static function run(string $filePattern, bool $isUp): void
+    public static function run(string $filePattern, bool $isUp): bool
     {
         self::$migratedFileNames = [];
 
@@ -68,6 +68,13 @@ class Migrate
         if ($isDone) {
             self::updateMigrationTable();
         }
+
+        return $isDone;
+    }
+
+    public static function getMigratedFiles(): array
+    {
+        return array_map('basename', self::$migrationFiles);
     }
 
     private static function searchFiles(string $filePattern): void
@@ -128,7 +135,7 @@ class Migrate
             foreach ($queries as $query) {
                 MigrationModel::vm()->query($query)->exec();
             }
-        });
+        }, true);
     }
 
     private static function updateMigrationTable(): void
@@ -137,7 +144,7 @@ class Migrate
 
         $list = array_map(function (string $fileName) use ($batch) {
             return [
-                'migration_file' => $fileName,
+                'migration_file' => basename($fileName),
                 'batch' => $batch,
             ];
         }, self::$migrationFiles);
