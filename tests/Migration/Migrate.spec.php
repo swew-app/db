@@ -11,9 +11,26 @@ beforeAll(function () {
     ModelConfig::setPDO($pdo);
 });
 
-it('Migrate [add files]', function () {
-    Migrate::run(__DIR__.'/stub/**.php', true);
+it('Migrate [up]', function () {
+    Migrate::run(__DIR__.'/stub/migrations/**.php', true);
 
     $countOfMigrationFiles = MigrationModel::vm()->count()->getValue();
     expect($countOfMigrationFiles)->toBe(2);
+});
+
+it('Migrate [down]', function () {
+    // Adding a second migration step
+    Migrate::run(__DIR__.'/stub/migrations_2/**.php', true);
+    // Adding a third migration step
+    Migrate::run(__DIR__.'/stub/migrations_3/**.php', true);
+
+    // down two last steps
+    Migrate::run(__DIR__.'/stub/**.php', false, 2);
+    $batch = MigrationModel::vm()->max('batch')->getValue('batch');
+    expect($batch)->toBe(1);
+
+    // All
+    Migrate::run(__DIR__.'/stub/**.php', false, 0);
+    $batch = MigrationModel::vm()->max('batch')->getValue('batch');
+    expect($batch)->toBe(null);
 });

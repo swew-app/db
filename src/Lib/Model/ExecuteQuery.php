@@ -86,6 +86,17 @@ class ExecuteQuery
         return $this;
     }
 
+    public function getMap(callable $fn): array|bool
+    {
+        $res = $this->get();
+
+        if (is_bool($res)) {
+            return $res;
+        }
+
+        return array_map($fn, $res);
+    }
+
     public function get(): array|bool
     {
         $self = $this;

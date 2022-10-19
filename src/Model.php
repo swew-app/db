@@ -180,6 +180,7 @@ abstract class Model
             if ($showException) {
                 throw $e;
             }
+
             return false;
         }
     }

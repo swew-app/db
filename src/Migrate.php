@@ -23,6 +23,15 @@ class Migrate
     {
     }
 
+    private static function reset(): void
+    {
+        self::$migrationFiles = [];
+        self::$upCallbackList = [];
+        self::$downCallbackList = [];
+        self::$migratedFileNames = [];
+        self::$currentBatch = 0;
+    }
+
     public static function up(callable $callback): void
     {
         self::$upCallbackList[] = $callback;
@@ -42,34 +51,20 @@ class Migrate
      * [x] make a transaction for the migration
      * [x] create an entry in the migration table
      */
-    public static function run(string $filePattern, bool $isUp): bool
+    public static function run(string $filePattern, bool $isUp, int $batchSteps = 0): bool
     {
-        self::$migratedFileNames = [];
+        self::reset();
 
         self::searchFiles($filePattern);
 
         self::loadMigrationsStatistic();
 
-        $migratedFileNames = self::$migratedFileNames;
-
-        self::$migrationFiles = array_filter(
-            self::$migrationFiles,
-            function (string $path) use ($migratedFileNames) {
-                return in_array(basename($path), $migratedFileNames) !== true;
-            }
-        );
-
-        self::loadCallbacks();
-
-        $list = $isUp ? self::$upCallbackList : self::$downCallbackList;
-
-        $isDone = self::migrate($list);
-
-        if ($isDone) {
-            self::updateMigrationTable();
+        // up
+        if ($isUp) {
+            return self::runUp();
         }
-
-        return $isDone;
+        // down
+        return self::runDown($batchSteps);
     }
 
     public static function getMigratedFiles(): array
@@ -136,6 +131,83 @@ class Migrate
                 MigrationModel::vm()->query($query)->exec();
             }
         }, true);
+    }
+
+    private static function runUp(): bool
+    {
+        $migratedFileNames = self::$migratedFileNames;
+
+        self::$migrationFiles = array_filter(
+            self::$migrationFiles,
+            function (string $path) use ($migratedFileNames) {
+                return in_array(basename($path), $migratedFileNames) !== true;
+            }
+        );
+
+        self::loadCallbacks();
+
+        $isDone = self::migrate(self::$upCallbackList);
+
+        if ($isDone) {
+            self::updateMigrationTable();
+        }
+
+        return $isDone;
+    }
+
+    private static function runDown(int $batchSteps = 0): bool
+    {
+        $steps = [];
+
+        if ($batchSteps > 0) {
+            $maxStep = MigrationModel::vm()->max('batch')->getValue('batch');
+
+            while ($batchSteps > 0 && $maxStep > 0) {
+                $steps[] = $maxStep;
+                $batchSteps--;
+                $maxStep--;
+            }
+
+            $migratedFileNames = MigrationModel::vm()
+                ->select('migration_file')
+                ->whereIn('batch', $steps)
+                ->orderBy('batch', 'DESC')
+                ->getMap(
+                    fn (array $v) => $v['migration_file']
+                );
+        } else {
+            $migratedFileNames = MigrationModel::vm()
+                ->select('migration_file')
+                ->orderBy('batch', 'DESC')
+                ->getMap(
+                    fn (array $v) => $v['migration_file']
+                );
+        }
+
+        if (is_bool($migratedFileNames)) {
+            return false;
+        }
+
+        self::$migrationFiles = array_filter(
+            self::$migrationFiles,
+            function (string $path) use ($migratedFileNames) {
+                return in_array(basename($path), $migratedFileNames);
+            }
+        );
+
+        self::loadCallbacks();
+
+        $isDone = self::migrate(self::$downCallbackList);
+
+        if ($isDone) {
+            if (count($steps) > 0) {
+                MigrationModel::vm()->delete()->whereIn('batch', $steps)->exec();
+            } else {
+                MigrationModel::vm()->delete()->exec();
+            }
+        }
+
+        return $isDone;
     }
 
     private static function updateMigrationTable(): void

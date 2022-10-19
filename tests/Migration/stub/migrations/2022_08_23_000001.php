@@ -26,5 +26,5 @@ Migrate::down(function (Migrator $table) {
 });
 
 Migrate::down(function (Migrator $table) {
-    $table->tableDrop('jobs');
+    $table->tableDrop('messages');
 });

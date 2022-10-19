@@ -148,6 +148,11 @@ UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // User
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
 
 UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getValue(); // First value from first item
+
+// Mapped values
+UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getMap(
+    fn ($v) => $v['login']
+);
 ```
 
 ## insert AND insertMany
