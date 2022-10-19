@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use PDO;
 use LogicException;
-use Swew\Db\Utils\Obj;
-use Swew\Db\ModelConfig;
+use PDO;
 use Psr\SimpleCache\CacheInterface;
 use Swew\Db\Lib\Model\ExecuteQuery;
+use Swew\Db\Utils\Obj;
 
 abstract class Model
 {
@@ -35,14 +34,14 @@ abstract class Model
         return new static;
     }
 
-    protected function getCache(): CacheInterface | bool | null
+    protected function getCache(): CacheInterface|bool|null
     {
         return null;
     }
 
     final public function getTableName(): string
     {
-        return ModelConfig::getTablePrefix() . $this->table();
+        return ModelConfig::getTablePrefix().$this->table();
     }
 
     private function getPDO(): PDO
@@ -143,8 +142,8 @@ abstract class Model
     {
         return [
             // Default casting
-            'created_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
-            'updated_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
+            'created_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
+            'updated_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
         ];
     }
 
@@ -210,6 +209,44 @@ abstract class Model
         return $exq;
     }
 
+    public function max(string $key): ExecuteQuery
+    {
+        $sql = $this->getSqlWithTableName("SELECT MAX(`$key`) as `$key` FROM [TABLE]");
+
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
+    }
+
+    public function min(string $key): ExecuteQuery
+    {
+        $sql = $this->getSqlWithTableName("SELECT MIN(`$key`) as `$key` FROM [TABLE]");
+
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
+    }
+
+    public function insertMany(array $dataList): void
+    {
+        foreach ($dataList as $data) {
+            $this->save($data);
+        }
+    }
+
+    public function insert(?array $data = null): ExecuteQuery
+    {
+        return $this->save($data);
+    }
+
     public function save(?array $data = null): ExecuteQuery
     {
         if (is_null($data)) {
@@ -241,7 +278,7 @@ abstract class Model
             $data = $this;
         }
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($data));
         } else {
             $data = $this->getFilteredDataWithoutId($data);
@@ -256,7 +293,7 @@ abstract class Model
         $keys = array_keys($data);
         $mappedKeys = array_map(fn (string $key) => "`$key` = ?", $keys);
 
-        $sql = 'UPDATE [TABLE] SET ' . implode(', ', $mappedKeys);
+        $sql = 'UPDATE [TABLE] SET '.implode(', ', $mappedKeys);
         $sql = $this->getSqlWithTableName($sql);
 
         $exq = new ExecuteQuery($this->getPDO(), $sql, $this);

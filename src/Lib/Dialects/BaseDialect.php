@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Swew\Db\Lib\Dialects;
@@ -8,7 +9,7 @@ use Swew\Db\Lib\ColumnSize;
 
 class BaseDialect
 {
-     public function getNumberType(ColumnSize $size, int $precision, int $scale): string
+    public function getNumberType(ColumnSize $size, int $precision, int $scale): string
     {
         return match ($size) {
             ColumnSize::TINYINT => 'TINYINT',
@@ -39,22 +40,22 @@ class BaseDialect
     public function getStringType(ColumnSize $size, int $len = 0): string
     {
         return match ($size) {
-            ColumnSize::CHAR => ($len ? "CHAR($len)" : "CHAR"),
+            ColumnSize::CHAR => ($len ? "CHAR($len)" : 'CHAR'),
             // length range from 0 to 65,535
-            ColumnSize::VARCHAR => ($len ? "VARCHAR($len)" : "VARCHAR"),
+            ColumnSize::VARCHAR => ($len ? "VARCHAR($len)" : 'VARCHAR'),
             // default 1  characters
-            ColumnSize::BINARY => "BINARY",
-            ColumnSize::VARBINARY => "VARBINARY",
-            ColumnSize::TINYBLOB => "TINYBLOB",
+            ColumnSize::BINARY => 'BINARY',
+            ColumnSize::VARBINARY => 'VARBINARY',
+            ColumnSize::TINYBLOB => 'TINYBLOB',
             // max: 2^16−1  characters
-            ColumnSize::BLOB => "BLOB",
-            ColumnSize::MEDIUMBLOB => "MEDIUMBLOB",
-            ColumnSize::LONGBLOB => "LONGBLOB",
+            ColumnSize::BLOB => 'BLOB',
+            ColumnSize::MEDIUMBLOB => 'MEDIUMBLOB',
+            ColumnSize::LONGBLOB => 'LONGBLOB',
             // max: 255  characters
-            ColumnSize::TINYTEXT => "TINYTEXT",
-            ColumnSize::TEXT => ($len ? "TEXT($len)" : "TEXT"),
-            ColumnSize::MEDIUMTEXT => "MEDIUMTEXT",
-            ColumnSize::LONGTEXT => "LONGTEXT",
+            ColumnSize::TINYTEXT => 'TINYTEXT',
+            ColumnSize::TEXT => ($len ? "TEXT($len)" : 'TEXT'),
+            ColumnSize::MEDIUMTEXT => 'MEDIUMTEXT',
+            ColumnSize::LONGTEXT => 'LONGTEXT',
             default => throw new LogicException('[BaseDialect "string"] Wrong type is passed'),
         };
     }

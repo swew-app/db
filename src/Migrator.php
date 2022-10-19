@@ -27,12 +27,12 @@ final class Migrator
 
     private function addLine(string|MigrationColumn $column, string $prefix = '  '): void
     {
-        if (!empty($this->tableForDrop)) {
+        if (! empty($this->tableForDrop)) {
             throw new LogicException('You cannot delete and create tables at the same time');
         }
 
         if (is_string($column)) {
-            $this->sqlLines[] = $prefix . $column;
+            $this->sqlLines[] = $prefix.$column;
         } else {
             $this->sqlLines[] = $column;
         }
@@ -51,7 +51,7 @@ final class Migrator
             if (is_string($line)) {
                 $lines[] = $line;
             } elseif ($line instanceof MigrationColumn) {
-                $lines[] = '  ' . $line->toString();
+                $lines[] = '  '.$line->toString();
             }
         }
 
@@ -73,7 +73,7 @@ final class Migrator
 
     public function tableCreate(string $tableName): self
     {
-        if (!empty($this->table)) {
+        if (! empty($this->table)) {
             throw new LogicException("The table '$tableName' is already set");
         }
 
@@ -84,7 +84,7 @@ final class Migrator
 
     public function tableDrop(string $tableName): self
     {
-        if (!empty($this->tableName)) {
+        if (! empty($this->tableName)) {
             throw new LogicException("The table '$tableName' is already set");
         }
 
@@ -124,6 +124,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::BIGINT);
         $column->setSuffix('AUTO_INCREMENT');
+
         return $column;
     }
 
@@ -161,6 +162,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::SMALLINT);
         $column->setSuffix('AUTO_INCREMENT');
+
         return $column;
     }
 
@@ -178,6 +180,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::TINYINT);
         $column->setSuffix('AUTO_INCREMENT');
+
         return $column;
     }
 
@@ -185,6 +188,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::BIGINT);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
 
@@ -192,6 +196,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::DECIMAL);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
 
@@ -199,6 +204,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::INT);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
 
@@ -206,6 +212,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::MEDIUMINT);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
 
@@ -213,6 +220,7 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::SMALLINT);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
 
@@ -220,12 +228,13 @@ final class Migrator
     {
         $column = $this->number($name, ColumnSize::TINYINT);
         $column->setSuffix('UNSIGNED');
+
         return $column;
     }
     //endregion
 
     //region [DATE]
-    public function dateTime(string $name): void
+    public function dateTime(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -234,9 +243,11 @@ final class Migrator
         $column->setType($type);
 
         $this->addLine($column);
+
+        return $column;
     }
 
-    public function date(string $name): void
+    public function date(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -245,9 +256,11 @@ final class Migrator
         $column->setType($type);
 
         $this->addLine($column);
+
+        return $column;
     }
 
-    public function time(string $name): void
+    public function time(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -256,9 +269,11 @@ final class Migrator
         $column->setType($type);
 
         $this->addLine($column);
+
+        return $column;
     }
 
-    public function timestamp(string $name): void
+    public function timestamp(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -267,9 +282,11 @@ final class Migrator
         $column->setType($type);
 
         $this->addLine($column);
+
+        return $column;
     }
 
-    public function year(string $name): void
+    public function year(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
@@ -278,6 +295,8 @@ final class Migrator
         $column->setType($type);
 
         $this->addLine($column);
+
+        return $column;
     }
     //endregion
 
@@ -364,19 +383,9 @@ final class Migrator
     //region [TIMESTAMP]
     public function timestamps(): void
     {
-        $column = new MigrationColumn('created_at');
-        $column->setType('datetime');
-        $column->default('0000-00-00 00:00:00')->nullable();
-        $this->addLine($column);
+        $this->timestamp('created_at')->nullable();
 
-        $column = new MigrationColumn('updated_at');
-        if ($this->type === 'sqlite') {
-            $column->setType('TEXT');
-        } else {
-            $column->setType('datetime');
-            $column->default('0000-00-00 00:00:00')->nullable();
-        }
-        $this->addLine($column);
+        $this->timestamp('updated_at')->nullable();
     }
 
     //endregion

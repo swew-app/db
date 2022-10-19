@@ -18,7 +18,7 @@ final class ModelConfig
 
     public static function setPDO(PDO $pdo): void
     {
-        if (self::$pdo) {
+        if (self::$pdo && self::$pdo !== $pdo) {
             throw new LogicException('PDO already exists');
         }
         self::$pdo = $pdo;
@@ -27,6 +27,11 @@ final class ModelConfig
     public static function getPDO(): PDO|null
     {
         return self::$pdo;
+    }
+
+    public static function removePDO(): void
+    {
+        self::$pdo = null;
     }
 
     private static ?CacheInterface $defaultCache = null;

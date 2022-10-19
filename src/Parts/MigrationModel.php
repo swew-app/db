@@ -33,10 +33,10 @@ final class MigrationModel extends Model
 
         $res = $this->query($sql)->getValue();
 
-        return !!$res;
+        return (bool) $res;
     }
 
-    public const CREATE_TABLE = <<<QUERY
+    public const CREATE_TABLE = <<<'QUERY'
     CREATE TABLE IF NOT EXISTS [TABLE] (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         migration_file VARCHAR(255) NOT NULL,
