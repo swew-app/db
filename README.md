@@ -1,9 +1,12 @@
-# SWEW\db\
+# SWEW/db
+
 Simplest Migration and SqlModel tool
 
+A super __lightweight__ tool for creating __migrations__ or interacting with a database in PHP.
+
+PHP - should be light and fast!!!
 
 # Usage
-
 
 # Migration
 
@@ -155,7 +158,7 @@ UserModel::vm()
 
 UserModel::vm()
     ->insert(['login' => 'MyLogin', 'name' => 'My Name']);
-    
+
 UserModel::vm()
     ->insertMany([
       ['login' => 'MyLogin_1', 'name' => 'My Name 1'],

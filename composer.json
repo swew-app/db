@@ -2,6 +2,7 @@
     "name": "swew/db",
     "type": "library",
     "description": "Migration tool",
+    "keywords": ["database", "migrations", "model", "pdo", "orm"],
     "license": "MIT",
     "authors": [
         {
