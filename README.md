@@ -6,7 +6,11 @@ A super __lightweight__ tool for creating __migrations__ or interacting with a d
 
 PHP - should be light and fast!!!
 
-# Usage
+# Install
+
+```sh
+composer require swew/db
+```
 
 # Migration
 
@@ -54,6 +58,8 @@ Migrate::run($filePattern, $isUpMigration);
 
 ---
 
+# DataBase queries
+
 # Model
 
 ```php
@@ -93,8 +99,8 @@ class UserModel extends Model {
     {
         return [
             // Default casting
-            'created_at' => fn ($timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
-            'updated_at' => fn ($timeStamp) => date('Y/m/d - H:i', strtotime($timeStamp)),
+            'created_at' => fn ($timeStamp) => date('Y.m.d - H:i:s', strtotime($timeStamp)),
+            'updated_at' => fn ($timeStamp) => date('Y.m.d - H:i:s', strtotime($timeStamp)),
         ];
     }
 
@@ -125,6 +131,8 @@ class UserModel extends Model {
 }
 ```
 
+---
+
 ## GET
 ```php
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->get(); // array
@@ -140,7 +148,10 @@ UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserMode
 UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getValue(); // First value from first item
 ```
 
-## INSERT
+## insert AND insertMany
+
+> alias for [save](#save)
+
 ```php
 $user = new UserModel();
 
@@ -197,7 +208,10 @@ $count = UserModel::vm()
 
 ```php
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->get();
+```
+## PAGINATE
 
+```php
 // Paginate
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPages($pageNumber = 1, $perPage = 10);
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPagesWithCount();
@@ -213,6 +227,7 @@ UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPagesWithCount();
 ```
 
 ```php
+// cursor pagination
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
 
 // Result
@@ -278,6 +293,14 @@ $user->password = 'secret';
 $user->save();
 ```
 
+```php
+UserModel::vm()->save([
+    'name' => 'Don',
+    'login' => 'Ninja',
+    'password' => 'secret',
+]);
+```
+
 ### update
 
 ```php
@@ -336,7 +359,6 @@ UserModel::vm()->select()->whereIn('id', [1, 2, 3])->exec();
 ```php
 UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
 ```
-
 
 # Cache
 
