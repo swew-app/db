@@ -6,13 +6,25 @@ use Swew\Db\Migrate;
 use Swew\Db\Migrator;
 
 Migrate::up(function (Migrator $table) {
-    $table->setSql('SELECT 1');
+    $table->tableCreate('jobs');
+    $table->id();
+    $table->string('name');
+    $table->timestamps();
 });
 
 Migrate::up(function (Migrator $table) {
-    $table->setSql('SELECT 2');
+    $table->tableCreate('messages');
+    $table->id();
+    $table->bigInteger('user_id');
+    $table->text('message');
+    $table->dateTime('time');
+    $table->timestamps();
 });
 
 Migrate::down(function (Migrator $table) {
-    $table->setSql('SELECT 2');
+    $table->tableDrop('jobs');
+});
+
+Migrate::down(function (Migrator $table) {
+    $table->tableDrop('jobs');
 });

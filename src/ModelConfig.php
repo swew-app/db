@@ -18,15 +18,24 @@ final class ModelConfig
 
     public static function setPDO(PDO $pdo): void
     {
-        if (self::$pdo) {
+        if (self::$pdo && self::$pdo !== $pdo) {
             throw new LogicException('PDO already exists');
         }
         self::$pdo = $pdo;
     }
 
-    public static function getPDO(): PDO|null
+    public static function getPDO(): PDO
     {
+        if (is_null(self::$pdo)) {
+            throw new LogicException('Please set PDO, use method ModelConfig::setPDO');
+        }
+
         return self::$pdo;
+    }
+
+    public static function removePDO(): void
+    {
+        self::$pdo = null;
     }
 
     private static ?CacheInterface $defaultCache = null;
@@ -51,5 +60,17 @@ final class ModelConfig
         }
 
         return self::$defaultCache;
+    }
+
+    private static string $tablePrefix = '';
+
+    public static function setTablePrefix(string $tablePrefix): void
+    {
+        self::$tablePrefix = $tablePrefix;
+    }
+
+    public static function getTablePrefix(): string
+    {
+        return self::$tablePrefix;
     }
 }

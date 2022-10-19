@@ -10,6 +10,7 @@ use Swew\Testing\Model\Stub\UserSoftModel;
 beforeAll(function () {
     $pdo = getPDO(true);
 
+    ModelConfig::removePDO();
     ModelConfig::setPDO($pdo);
     $data = getFakeUsers(2);
 

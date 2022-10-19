@@ -6,7 +6,7 @@ TECHNICAL:
     softDeletesTz
     softDeletes
 
-NUMBER:
+NUMBER: X
     bigIncrements
     bigInteger
     decimal
@@ -21,32 +21,30 @@ NUMBER:
     unsignedMediumInteger
     unsignedSmallInteger
     unsignedTinyInteger
+    smallIncrements
+    smallInteger
+    tinyIncrements
 
 TEXT:
+    string
     longText
     mediumText
-    multiLineString
-    string
     text
     tinyText
+    char
+    enum
 
 DATE:
-    dateTimeTz
     dateTime
     date
-    timeTz
     time
-    timestampTz
     timestamp
-    timestampsTz
     timestamps
     year
 
 OTHER:
     binary
     boolean
-    char
-    enum
     foreignId
     foreignIdFor
     foreignUuid
@@ -69,7 +67,4 @@ OTHER:
     polygon
     rememberToken
     set
-    smallIncrements
-    smallInteger
-    ? tinyIncrements
 

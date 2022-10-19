@@ -29,6 +29,28 @@ Migrate::down(function (Migrator $table) {
 });
 ```
 
+## Run migration
+
+```php
+<?php
+
+use PDO;
+use Swew\Db\{Migrate,ModelConfig};
+
+// PDO connection
+$pdo = new PDO('sqlite:' . __DIR__ . '/database.sqlite');
+ModelConfig::setPDO($pdo);
+
+// "**" - is alias for sub folders
+$filePattern = __DIR__ . '/migrations/**.php';
+// Run "UP" migrations
+$isUpMigration = true;
+
+Migrate::run($filePattern, $isUpMigration);
+```
+
+---
+
 # Model
 
 ```php
@@ -130,6 +152,15 @@ $lastId = UserModel::vm()->query(UserModel::INSERT_LOGIN_NAME)
 UserModel::vm()
     ->query(UserModel::INSERT_LOGIN_NAME, ['login' => 'MyLogin', 'name' => 'My Name'])
     ->exec();
+
+UserModel::vm()
+    ->insert(['login' => 'MyLogin', 'name' => 'My Name']);
+    
+UserModel::vm()
+    ->insertMany([
+      ['login' => 'MyLogin_1', 'name' => 'My Name 1'],
+      ['login' => 'MyLogin_2', 'name' => 'My Name 2'],
+    ]);
 ```
 
 ## UPDATE
@@ -207,7 +238,7 @@ $isOk = UserModel::transaction(function () {
 ### select
 
 ```php
- UserModel::vm()
+UserModel::vm()
     ->select('name', 'rating')
     ->where('rating', '>', 4)
     ->getFirst();
@@ -215,6 +246,22 @@ $isOk = UserModel::transaction(function () {
     //     'name' => 'Leo',
     //     'rating' => 5,
     // ],
+```
+
+### max
+
+```php
+UserModel::vm()
+    ->max('rating')
+    ->getValue('rating'); // 5
+```
+
+### min
+
+```php
+UserModel::vm()
+    ->min('rating')
+    ->getValue(); // 1
 ```
 
 ### save

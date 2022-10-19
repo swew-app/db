@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Swew\Db;
 
-use LogicException;
 use PDO;
 use Psr\SimpleCache\CacheInterface;
 use Swew\Db\Lib\Model\ExecuteQuery;
@@ -12,20 +11,20 @@ use Swew\Db\Utils\Obj;
 
 abstract class Model
 {
-    private static string $tablePrefix = '';
-
     private ?PDO $pdoCurrentConnection = null;
 
     abstract protected function table(): string;
 
-    final public static function setTablePrefix(string $tablePrefix): void
-    {
-        self::$tablePrefix = $tablePrefix;
-    }
-
     final public function setCurrentQueryPDO(PDO $pdo): void
     {
         $this->pdoCurrentConnection = $pdo;
+    }
+
+    final public function getDriverType(): string
+    {
+        return $this
+            ->getPDO()
+            ->getAttribute(PDO::ATTR_DRIVER_NAME);
     }
 
     public static function vm(): static
@@ -34,25 +33,19 @@ abstract class Model
         return new static;
     }
 
-    protected function getCache(): CacheInterface | bool | null
+    protected function getCache(): CacheInterface|bool|null
     {
         return null;
     }
 
-    private function getTableName(): string
+    final public function getTableName(): string
     {
-        return self::$tablePrefix.$this->table();
+        return ModelConfig::getTablePrefix().$this->table();
     }
 
     private function getPDO(): PDO
     {
-        $pdo = $this->pdoCurrentConnection ?: ModelConfig::getPDO();
-
-        if (is_null($pdo)) {
-            throw new LogicException('Please set PDO, use method ModelConfig::setPDO');
-        }
-
-        return $pdo;
+        return $this->pdoCurrentConnection ?: ModelConfig::getPDO();
     }
 
     public function getSqlWithTableName(string $sqlQuery): string
@@ -142,8 +135,8 @@ abstract class Model
     {
         return [
             // Default casting
-            'created_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
-            'updated_at' => fn (mixed $timeStamp) => $timeStamp && date('Y/m/d - H:i', strtotime($timeStamp)),
+            'created_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
+            'updated_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
         ];
     }
 
@@ -207,6 +200,44 @@ abstract class Model
         }
 
         return $exq;
+    }
+
+    public function max(string $key): ExecuteQuery
+    {
+        $sql = $this->getSqlWithTableName("SELECT MAX(`$key`) as `$key` FROM [TABLE]");
+
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
+    }
+
+    public function min(string $key): ExecuteQuery
+    {
+        $sql = $this->getSqlWithTableName("SELECT MIN(`$key`) as `$key` FROM [TABLE]");
+
+        $exq = $this->query($sql);
+
+        if ($this->softDelete()) {
+            $exq->where('deleted_at', null);
+        }
+
+        return $exq;
+    }
+
+    public function insertMany(array $dataList): void
+    {
+        foreach ($dataList as $data) {
+            $this->save($data);
+        }
+    }
+
+    public function insert(?array $data = null): ExecuteQuery
+    {
+        return $this->save($data);
     }
 
     public function save(?array $data = null): ExecuteQuery

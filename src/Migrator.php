@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Swew\Db;
 
 use LogicException;
+use Swew\Db\Lib\ColumnSize;
+use Swew\Db\Lib\Dialects\BaseDialect;
+use Swew\Db\Lib\Dialects\MysqlDialect;
+use Swew\Db\Lib\Dialects\SqlLiteDialect;
 use Swew\Db\Lib\MigrationColumn;
 
 final class Migrator
@@ -17,7 +21,7 @@ final class Migrator
 
     private string $queryTablePrefix = '';
 
-    public function __construct(readonly string $type = 'mysql')
+    public function __construct(readonly string $type)
     {
     }
 
@@ -94,57 +98,308 @@ final class Migrator
     public function id(string $name = 'id'): void
     {
         $idSql = match ($this->type) {
-            'mysql' => "`$name` INT PRIMARY KEY AUTO_INCREMENT",
-            'pgsql' => "`$name` serial PRIMARY KEY",
-            'sqlite' => "`$name` INTEGER PRIMARY KEY",
+            'mysql' => "`$name` SERIAL",
+            'pgsql' => "`$name` INT PRIMARY KEY AUTO_INCREMENT,",
+            'sqlite' => "`$name` INTEGER PRIMARY KEY AUTOINCREMENT",
         };
 
         $this->addLine($idSql);
     }
 
-    public function int(string $name): MigrationColumn
+    //region [NUMBER]
+    private function number(string $name, ColumnSize $size, int $precision = 0, int $scale = 0): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType('INT');
+        $type = $this->dialect()->getNumberType($size, $precision, $scale);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
 
-    //region [TEXT]
-    public function char(string $name, int $length = 1): MigrationColumn
+    public function bigIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::BIGINT);
+        $column->setSuffix('AUTO_INCREMENT');
+
+        return $column;
+    }
+
+    public function bigInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::BIGINT);
+    }
+
+    public function decimal(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::DECIMAL, $precision, $scale);
+    }
+
+    public function double(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::DOUBLE, $precision, $scale);
+    }
+
+    public function float(string $name, int $precision, int $scale): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::FLOAT, $precision, $scale);
+    }
+
+    public function integer(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::INT);
+    }
+
+    public function smallInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::SMALLINT);
+    }
+
+    public function smallIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::SMALLINT);
+        $column->setSuffix('AUTO_INCREMENT');
+
+        return $column;
+    }
+
+    public function mediumInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::MEDIUMINT);
+    }
+
+    public function tinyInteger(string $name): MigrationColumn
+    {
+        return $this->number($name, ColumnSize::TINYINT);
+    }
+
+    public function tinyIncrements(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::TINYINT);
+        $column->setSuffix('AUTO_INCREMENT');
+
+        return $column;
+    }
+
+    public function unsignedBigInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::BIGINT);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+
+    public function unsignedDecimal(string $name, int $scale = 2): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::DECIMAL);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+
+    public function unsignedInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::INT);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+
+    public function unsignedMediumInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::MEDIUMINT);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+
+    public function unsignedSmallInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::SMALLINT);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+
+    public function unsignedTinyInteger(string $name): MigrationColumn
+    {
+        $column = $this->number($name, ColumnSize::TINYINT);
+        $column->setSuffix('UNSIGNED');
+
+        return $column;
+    }
+    //endregion
+
+    //region [DATE]
+    public function dateTime(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("CHAR($length)");
+        $type = $this->dialect()->getDateType(ColumnSize::DATETIME);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
 
-    public function string(string $name, int $length = 255): MigrationColumn
+    public function date(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("VARCHAR($length)");
+        $type = $this->dialect()->getDateType(ColumnSize::DATE);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
 
-    public function text(string $name, int $length = 255): MigrationColumn
+    public function time(string $name): MigrationColumn
     {
         $column = new MigrationColumn($name);
 
-        $column->setType("TEXT($length)");
+        $type = $this->dialect()->getDateType(ColumnSize::TIME);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function timestamp(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getDateType(ColumnSize::TIMESTAMP);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function year(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getDateType(ColumnSize::YEAR);
+
+        $column->setType($type);
 
         $this->addLine($column);
 
         return $column;
     }
     //endregion
+
+    //region [TEXT]
+    public function string(string $name, int $len = 255): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::VARCHAR, $len);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function longText(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::LONGTEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function mediumText(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::MEDIUMTEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function text(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::TEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function tinyText(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::TINYTEXT);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+
+    public function char(string $name, int $len = 0): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getStringType(ColumnSize::CHAR, $len);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
+    //endregion
+
+    //region [TIMESTAMP]
+    public function timestamps(): void
+    {
+        $this->timestamp('created_at')->nullable();
+
+        $this->timestamp('updated_at')->nullable();
+    }
+
+    //endregion
+
+    private function dialect(): BaseDialect
+    {
+        if ('sqlite' === $this->type) {
+            return new SqlLiteDialect();
+        }
+
+        if ('mysql' === $this->type) {
+            return new MysqlDialect();
+        }
+
+        throw new LogicException('[Migrator] No suitable database driver is specified.');
+    }
 }
