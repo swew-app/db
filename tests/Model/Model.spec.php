@@ -310,6 +310,19 @@ it('Model [update]', function () {
     expect($res['password'])->toBe('#SALT_secret');
 });
 
+it('Model [orderBy,groupBy]', function () {
+    $data = UserModel::vm()
+        ->select()
+        ->orderBy('name')
+        ->groupBy('name')
+        ->limit(2)
+        ->offset(3)
+        ->toSql();
+
+    expect($data['sql'])
+    ->toBe('SELECT * FROM users GROUP BY `name` ORDER BY `name` ASC LIMIT 3, 2');
+});
+
 it('Model [delete]', function () {
     $count = UserModel::vm()->count()->where('id', 1)->getValue();
     expect($count)->toBe(1);

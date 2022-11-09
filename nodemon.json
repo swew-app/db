@@ -1,7 +1,8 @@
 {
   "ignore": ["vendor"],
   "watch": ["src", "tests"],
-  "exec": "composer test -- -f Migrate",
+  "exec": "composer test",
+  "_exec": "composer test -- -f Migrate",
   "ext": "php,json",
   "delay": 1000
 }

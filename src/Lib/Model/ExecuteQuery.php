@@ -252,6 +252,10 @@ class ExecuteQuery
             $sql .= ' WHERE ('.implode(' AND ', $where).')';
         }
 
+        if (count($this->groupBy) > 0) {
+            $sql .= ' GROUP BY '.implode(', ', $this->groupBy);
+        }
+
         if (count($this->orderBy) > 0) {
             $sql .= ' ORDER BY '.implode(', ', $this->orderBy);
         }
@@ -375,6 +379,15 @@ class ExecuteQuery
         }
 
         $this->orderBy[] = "`$key` $direction";
+
+        return $this;
+    }
+
+    private array $groupBy = [];
+
+    public function groupBy(string $key): self
+    {
+        $this->groupBy[] = "`$key`";
 
         return $this;
     }
