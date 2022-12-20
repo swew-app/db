@@ -60,9 +60,11 @@ class ExecuteQuery
             $sth = $this->pdo->prepare($sql);
 
             foreach ($castedData as $value) {
-                $sth->execute(
-                    $this->model->castValues($value, false)
-                );
+                $value = $this->model->castValues($value, false);
+
+                $this->bindValues($sth, $value);
+
+                $sth->execute($value);
             }
 
             $this->pdo->commit();
@@ -412,7 +414,31 @@ class ExecuteQuery
 
         $this->sth = $this->pdo->prepare($sql);
 
+        $this->bindValues($this->sth, $castedData);
+
         return $this->isDone = $this->sth->execute($castedData);
+    }
+
+    /**
+     * Bind values to their parameters in the given statement.
+     *
+     * @param  \PDOStatement  $statement
+     * @param  array  $bindings
+     * @return void
+     */
+    private function bindValues($statement, $bindings): void
+    {
+        foreach ($bindings as $key => $value) {
+            $statement->bindValue(
+                is_string($key) ? $key : $key + 1,
+                $value,
+                match (true) {
+                    is_int($value) => PDO::PARAM_INT,
+                    is_resource($value) => PDO::PARAM_LOB,
+                    default => PDO::PARAM_STR
+                },
+            );
+        }
     }
 
     private function createCacheKey(): string
