@@ -6,6 +6,17 @@ The **swew/db** library is a lightweight and fast PHP library that provides an e
 
 PHP - should be light and fast!!!
 
+---
+
+# Packages developed by SWEW
+
+> - [swew/cli](https://packagist.org/packages/swew/cli) - A command-line interface program with formatting and text entry functions.
+> - [swew/test](https://packagist.org/packages/swew/test) - A test framework that is designed to fix the fatal flaw of other test frameworks.
+> - [swew/db](https://packagist.org/packages/swew/db) - A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries.
+> - [swew/dd](https://packagist.org/packages/swew/dd) - The simplest way to debug variables. As in Laravel.
+
+---
+
 # Install
 
 ```sh
