@@ -2,7 +2,7 @@
 
 Simplest Migration and SqlModel tool
 
-A super __lightweight__ tool for creating __migrations__ or interacting with a database in PHP.
+The **swew/db** library is a lightweight and fast PHP library that provides an easy-to-use interface for creating and executing database migrations, as well as interacting with the database through queries. It's designed to protect against SQL injection attacks by using parameter binding and other security measures.
 
 PHP - should be light and fast!!!
 
