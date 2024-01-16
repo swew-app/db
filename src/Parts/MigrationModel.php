@@ -29,6 +29,7 @@ final class MigrationModel extends Model
             'mysql' => "SHOW TABLES LIKE '[TABLE]'",
             'pgsql' => "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '[TABLE]')",
             'sqlite' => "SELECT name FROM sqlite_master WHERE type='table' AND name='[TABLE]'",
+            default => throw new \LogicException('Wrong DriverType in DB'),
         };
 
         $res = $this->query($sql)->getValue();

@@ -2,7 +2,13 @@
     "name": "swew/db",
     "type": "library",
     "description": "A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries. swew/db uses prepared statements to protect against SQL injection attacks and supports multiple database systems.",
-    "keywords": ["database", "migrations", "model", "pdo", "orm"],
+    "keywords": [
+        "database",
+        "migrations",
+        "model",
+        "pdo",
+        "orm"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -21,8 +27,7 @@
         "psr-4": {
             "Swew\\Db\\": "src/"
         },
-        "files": [
-        ],
+        "files": [],
         "exclude-from-classmap": [
             "spec",
             "/Tests/",
@@ -41,10 +46,10 @@
     },
     "require-dev": {
         "laravel/pint": "v1.6.0",
-        "phpstan/phpstan": "^1.10.3",
-        "psalm/phar": "^5.7.6",
-        "swew/dd": "^v1.0.0",
-        "swew/test": "^v1.0.9"
+        "phpstan/phpstan": "^1.10.56",
+        "psalm/phar": "^5.19.0",
+        "swew/dd": "^1.4.2",
+        "swew/test": "^1.5.16"
     },
     "scripts": {
         "test": "t",

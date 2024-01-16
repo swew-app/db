@@ -136,6 +136,7 @@ class ExecuteQuery
         $callback = function () use (&$self) {
             $self->prepareAndExecute();
 
+            // TODO: получать из модели
             return $self->sth->fetch(PDO::FETCH_ASSOC);
         };
 
@@ -424,7 +425,6 @@ class ExecuteQuery
      *
      * @param  \PDOStatement  $statement
      * @param  array  $bindings
-     * @return void
      */
     private function bindValues($statement, $bindings): void
     {

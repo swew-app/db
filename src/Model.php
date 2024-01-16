@@ -129,8 +129,6 @@ abstract class Model
         return [];
     }
 
-    private static ?array $casts = null;
-
     protected function getCast(): array
     {
         return [

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0c36b6dd196cd9e8ad9dfad04f02b0ec",
+    "content-hash": "272fb714a1673eb8d6a587570fdd507c",
     "packages": [
         {
             "name": "psr/simple-cache",
@@ -127,16 +127,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.3",
+            "version": "1.10.56",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "5419375b5891add97dc74be71e6c1c34baaddf64"
+                "reference": "27816a01aea996191ee14d010f325434c0ee76fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/5419375b5891add97dc74be71e6c1c34baaddf64",
-                "reference": "5419375b5891add97dc74be71e6c1c34baaddf64",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/27816a01aea996191ee14d010f325434c0ee76fa",
+                "reference": "27816a01aea996191ee14d010f325434c0ee76fa",
                 "shasum": ""
             },
             "require": {
@@ -165,8 +165,11 @@
                 "static analysis"
             ],
             "support": {
+                "docs": "https://phpstan.org/user-guide/getting-started",
+                "forum": "https://github.com/phpstan/phpstan/discussions",
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.10.3"
+                "security": "https://github.com/phpstan/phpstan/security/policy",
+                "source": "https://github.com/phpstan/phpstan-src"
             },
             "funding": [
                 {
@@ -182,20 +185,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-25T14:47:13+00:00"
+            "time": "2024-01-15T10:43:00+00:00"
         },
         {
             "name": "psalm/phar",
-            "version": "5.7.6",
+            "version": "5.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/psalm/phar.git",
-                "reference": "4a7fc6f671a9e8c44c81ea35a1a1978d40e95478"
+                "reference": "ec7ecda263af008af9ab74432e309278f31f1e02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/psalm/phar/zipball/4a7fc6f671a9e8c44c81ea35a1a1978d40e95478",
-                "reference": "4a7fc6f671a9e8c44c81ea35a1a1978d40e95478",
+                "url": "https://api.github.com/repos/psalm/phar/zipball/ec7ecda263af008af9ab74432e309278f31f1e02",
+                "reference": "ec7ecda263af008af9ab74432e309278f31f1e02",
                 "shasum": ""
             },
             "require": {
@@ -215,22 +218,90 @@
             "description": "Composer-based Psalm Phar",
             "support": {
                 "issues": "https://github.com/psalm/phar/issues",
-                "source": "https://github.com/psalm/phar/tree/5.7.6"
+                "source": "https://github.com/psalm/phar/tree/5.19.0"
             },
-            "time": "2023-02-24T19:50:34+00:00"
+            "time": "2024-01-09T21:19:15+00:00"
         },
         {
-            "name": "swew/dd",
-            "version": "v1.0.0",
+            "name": "swew/cli",
+            "version": "v1.1.17",
             "source": {
                 "type": "git",
-                "url": "https://github.com/swew-app/dd.git",
-                "reference": "72bc152d022ec2d25f8d055eaefd538ea5b77d45"
+                "url": "https://github.com/swew-app/cli.git",
+                "reference": "f01b44b6b3458e1661b4add5b31c93654ed4b60f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swew-app/dd/zipball/72bc152d022ec2d25f8d055eaefd538ea5b77d45",
-                "reference": "72bc152d022ec2d25f8d055eaefd538ea5b77d45",
+                "url": "https://api.github.com/repos/swew-app/cli/zipball/f01b44b6b3458e1661b4add5b31c93654ed4b60f",
+                "reference": "f01b44b6b3458e1661b4add5b31c93654ed4b60f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "1.9.0",
+                "phpstan/phpstan": "^1.10.53",
+                "psalm/phar": "^5.18.0",
+                "swew/dd": "^1.3.1",
+                "swew/test.phar": "^1.5.13"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Functions/Functions.php"
+                ],
+                "psr-4": {
+                    "Swew\\Cli\\": "src/"
+                },
+                "exclude-from-classmap": [
+                    "spec",
+                    "/Tests/",
+                    "/test/",
+                    "/tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "AVIL13",
+                    "email": "avil@swew.app"
+                }
+            ],
+            "description": "SWEW/CLI: A PHP package for streamlined command line interface (CLI) development, providing an intuitive API for creating custom commands, handling input/output, and executing command logic effortlessly. Simplify your CLI application development with rapid development.",
+            "keywords": [
+                "cli",
+                "command-line",
+                "console",
+                "formatting",
+                "input",
+                "output",
+                "program",
+                "prompt",
+                "terminal",
+                "utility"
+            ],
+            "support": {
+                "issues": "https://github.com/swew-app/cli/issues",
+                "source": "https://github.com/swew-app/cli/tree/v1.1.17"
+            },
+            "time": "2024-01-05T18:39:45+00:00"
+        },
+        {
+            "name": "swew/dd",
+            "version": "v1.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/swew-app/dd.git",
+                "reference": "afcb52970e149fd5d01dd2916d1e3a95f841e1c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/swew-app/dd/zipball/afcb52970e149fd5d01dd2916d1e3a95f841e1c0",
+                "reference": "afcb52970e149fd5d01dd2916d1e3a95f841e1c0",
                 "shasum": ""
             },
             "type": "library",
@@ -252,42 +323,39 @@
             "description": "The simplest way to debug variables. As in Laravel.",
             "support": {
                 "issues": "https://github.com/swew-app/dd/issues",
-                "source": "https://github.com/swew-app/dd/tree/v1.0.0"
+                "source": "https://github.com/swew-app/dd/tree/v1.4.2"
             },
-            "time": "2022-08-02T14:43:39+00:00"
+            "time": "2024-01-11T09:55:43+00:00"
         },
         {
             "name": "swew/test",
-            "version": "v1.1.0",
+            "version": "v1.5.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swew-app/test.git",
-                "reference": "c69b621a99a63a8d28b5be44295b5187f91d8ec7"
+                "reference": "26eaf53cc23a5ad105b943e84831a4d4d2f239e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swew-app/test/zipball/c69b621a99a63a8d28b5be44295b5187f91d8ec7",
-                "reference": "c69b621a99a63a8d28b5be44295b5187f91d8ec7",
+                "url": "https://api.github.com/repos/swew-app/test/zipball/26eaf53cc23a5ad105b943e84831a4d4d2f239e2",
+                "reference": "26eaf53cc23a5ad105b943e84831a4d4d2f239e2",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.1"
+                "ext-json": "*",
+                "php": ">=8.1",
+                "swew/cli": "^1.1.17",
+                "swew/dd": "^1.3.1"
             },
             "require-dev": {
-                "laravel/pint": "v1.6.0",
-                "phpstan/phpstan": "^1.10.3",
-                "psalm/phar": "^5.7.6",
-                "swew/dd": "^v1.0.0"
+                "laravel/pint": "v1.10.0",
+                "phpstan/phpstan": "^1.10.54",
+                "psalm/phar": "5.10.0"
             },
             "bin": [
                 "bin/t"
             ],
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.x-dev"
-                }
-            },
             "autoload": {
                 "files": [
                     "src/Functions.php"
@@ -322,9 +390,9 @@
             ],
             "support": {
                 "issues": "https://github.com/swew-app/test/issues",
-                "source": "https://github.com/swew-app/test/tree/v1.1.0"
+                "source": "https://github.com/swew-app/test/tree/v1.5.16"
             },
-            "time": "2023-02-27T21:12:33+00:00"
+            "time": "2024-01-07T15:05:20+00:00"
         }
     ],
     "aliases": [],
@@ -339,5 +407,5 @@
     "platform-overrides": {
         "php": "8.1"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

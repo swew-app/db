@@ -101,6 +101,7 @@ final class Migrator
             'mysql' => "`$name` SERIAL",
             'pgsql' => "`$name` INT PRIMARY KEY AUTO_INCREMENT,",
             'sqlite' => "`$name` INTEGER PRIMARY KEY AUTOINCREMENT",
+            default => throw new \LogicException('Set type of DB'),
         };
 
         $this->addLine($idSql);
