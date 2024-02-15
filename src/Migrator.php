@@ -299,6 +299,19 @@ final class Migrator
 
         return $column;
     }
+
+    public function timestampInt(string $name): MigrationColumn
+    {
+        $column = new MigrationColumn($name);
+
+        $type = $this->dialect()->getNumberType(ColumnSize::INT, 0, 0);
+
+        $column->setType($type);
+
+        $this->addLine($column);
+
+        return $column;
+    }
     //endregion
 
     //region [TEXT]
@@ -382,11 +395,23 @@ final class Migrator
     //endregion
 
     //region [TIMESTAMP]
+
+    /**
+     * Creates `created_at` and `updated_at` columns of INT format for recording time independent of time zone
+     */
     public function timestamps(): void
     {
-        $this->timestamp('created_at')->nullable();
+        $this->timestampInt('created_at')->nullable();
 
-        $this->timestamp('updated_at')->nullable();
+        $this->timestampInt('updated_at')->nullable();
+    }
+
+    /**
+     * Creates a column `deleted_at` of INT format to record time independent of time zone
+     */
+    public function softDeletable(): void
+    {
+        $this->timestampInt('deleted_at')->nullable();
     }
 
     //endregion

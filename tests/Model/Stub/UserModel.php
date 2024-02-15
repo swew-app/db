@@ -19,10 +19,18 @@ class UserModel extends Model
 
     public string $password = 'secret';
 
+    protected function getCast(): array
+    {
+        return [
+            'is_block' => fn(mixed $v) => empty($v) ? 'Blocked': 'Valid',
+        ];
+    }
+
     protected function setCast(): array
     {
         return [
             'password' => fn (string $s) => "#SALT_$s",
+            'is_block' => fn (mixed $v) => empty($v) ? 1111 : 1000,
         ];
     }
 

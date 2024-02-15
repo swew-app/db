@@ -39,6 +39,8 @@ Migrate::up(function (Migrator $table) {
     $table->string('password', 64)->default('123456');
     $table->text('description')->fulltext();
     $table->integer('rating')->nullable();
+    
+    // $table->softDeletable(); // If need
     $table->timestamps();
 });
 
@@ -110,10 +112,10 @@ class UserModel extends Model {
 
     protected function getCast(): array
     {
-        return [
-            // Default casting
-            'created_at' => fn ($timeStamp) => date('Y.m.d - H:i:s', strtotime($timeStamp)),
-            'updated_at' => fn ($timeStamp) => date('Y.m.d - H:i:s', strtotime($timeStamp)),
+         return [
+            // Default casting, created_at and updated_at - INT
+            'created_at' => fn (mixed $timeStamp) => $timeStamp ? strtotime($timeStamp) : '',
+            'updated_at' => fn (mixed $timeStamp) => $timeStamp ? strtotime($timeStamp) : '',
         ];
     }
 
@@ -343,7 +345,7 @@ For soft delete to work, your table must have a deleted_at field of type DATETIM
 In your model, there must be a softDelete() method that returns true.
 
 ```php
-UserModel::vm()->delete()->where('id', 1)->exec();
+UserModel::vm()->softDelete()->where('id', 1)->exec();
 ```
 
 ### where

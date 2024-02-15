@@ -133,8 +133,8 @@ abstract class Model
     {
         return [
             // Default casting
-            'created_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
-            'updated_at' => fn (mixed $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', strtotime($timeStamp)) : '',
+            'created_at' => fn (int $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', $timeStamp) : '',
+            'updated_at' => fn (int $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', $timeStamp) : '',
         ];
     }
 
@@ -306,7 +306,7 @@ abstract class Model
 
         if ($this->softDelete()) {
             return $this->update([
-                'deleted_at' => date('Y-m-d H:i:s'),
+                'deleted_at' => time(),
             ]);
         }
 
@@ -317,7 +317,7 @@ abstract class Model
 
     private function addTimestampValues(array &$data, bool $isCreate): void
     {
-        $now = date('Y-m-d H:i:s');
+        $now = time();
 
         $data['updated_at'] = $now;
 
