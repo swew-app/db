@@ -23,7 +23,7 @@ class UserSoftModel extends Model
         return true;
     }
 
-    protected function getCast(): array
+    protected function castGet(): array
     {
         return [
             'name' => fn (string $v) => strtoupper($v),

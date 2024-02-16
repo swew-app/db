@@ -133,8 +133,8 @@ abstract class Model
     {
         return [
             // Default casting
-            'created_at' => fn (int $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', $timeStamp) : '',
-            'updated_at' => fn (int $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', $timeStamp) : '',
+            'created_at' => fn (int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int) $timeStamp) : '',
+            'updated_at' => fn (int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int) $timeStamp) : '',
         ];
     }
 
