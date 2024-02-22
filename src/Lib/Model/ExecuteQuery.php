@@ -60,7 +60,7 @@ class ExecuteQuery
             $sth = $this->pdo->prepare($sql);
 
             foreach ($castedData as $value) {
-                $value = $this->model->castValues($value, false);
+                $value = $this->model->castSetValues($value);
 
                 $this->bindValues($sth, $value);
 
@@ -123,7 +123,7 @@ class ExecuteQuery
         }
 
         return array_map(
-            fn (mixed $v) => $this->model->castValues($v, true),
+            fn(mixed $v) => $this->model->castValues($v),
             $results
         );
     }
@@ -157,7 +157,7 @@ class ExecuteQuery
             return false;
         }
 
-        return $this->model->castValues($result, true);
+        return $this->model->castValues($result);
     }
 
     public function getFirstItem(): Model
@@ -273,7 +273,7 @@ class ExecuteQuery
 
         return [
             'sql' => $sql,
-            'data' => $this->model->castValues($data, false),
+            'data' => $data,
         ];
     }
 
@@ -343,6 +343,8 @@ class ExecuteQuery
             throw new \LogicException('Wrong parameters');
         }
 
+        $val = $this->model->castSetValue($key, $val);
+
         if (is_null($val)) {
             $comp = 'IS ';
         }
@@ -398,7 +400,7 @@ class ExecuteQuery
     private function fillDto(array $value): Model
     {
         $model = clone $this->model;
-        $value = $this->model->castValues($value, true);
+        $value = $this->model->castValues($value);
 
         foreach ($value as $key => $val) {
             if (isset($model->$key)) {

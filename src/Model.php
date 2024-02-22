@@ -129,23 +129,48 @@ abstract class Model
         return [];
     }
 
-    protected function getCast(): array
-    {
-        return [
-            // Default casting
-            'created_at' => fn (int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int) $timeStamp) : '',
-            'updated_at' => fn (int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int) $timeStamp) : '',
-        ];
-    }
+    //#region [cast]
 
-    protected function setCast(): array
+    private ?array $castRules = null;
+
+    protected function cast(): array
     {
         return [];
     }
 
-    final public function castValues(array $values, bool $isGet): array
+    private function getCast(): array
     {
-        $casts = $isGet ? $this->getCast() : $this->setCast();
+        if (is_null($this->castRules)) {
+            $defaultCasts = [
+                'to' => [
+                    'created_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+                    'updated_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+                ],
+                'from' => [
+                    'created_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+                    'updated_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+                ],
+            ];
+
+            $this->castRules = array_merge_recursive($defaultCasts, $this->cast());
+        }
+
+        return $this->castRules;
+    }
+
+    final public function castSetValue(string $key, mixed $value): mixed
+    {
+        $cast = $this->getCast()['to'][$key] ?? null;
+
+        if (is_null($cast)) {
+            return $value;
+        }
+        return $cast($value);
+    }
+
+    final public function castSetValues(array $values): array
+    {
+        $casts = $this->getCast()['to'];
 
         foreach ($values as $key => $value) {
             if (isset($casts[$key])) {
@@ -156,6 +181,23 @@ abstract class Model
 
         return $values;
     }
+
+    final public function castValues(array $values): array
+    {
+        $casts = $this->getCast()['from'] ?? [];
+
+        foreach ($values as $key => $value) {
+            if (isset($casts[$key])) {
+                $fn = $casts[$key];
+                $values[$key] = $fn($value);
+            }
+        }
+
+        return $values;
+    }
+
+    //#endregion
+
 
     final public function getLastId(): mixed
     {
@@ -248,7 +290,7 @@ abstract class Model
             $data = $this->getFilteredDataWithoutId(Obj::getObjectVars($this));
         }
 
-        $data = $this->castValues($data, false);
+        $data = $this->castSetValues($data);
 
         if ($this->hasTimestamp()) {
             $this->addTimestampValues($data, true);
@@ -281,7 +323,7 @@ abstract class Model
             $data = $this->getFilteredDataWithoutId($data);
         }
 
-        $data = $this->castValues($data, false);
+        $data = $this->castSetValues($data);
 
         if ($this->hasTimestamp()) {
             $this->addTimestampValues($data, false);

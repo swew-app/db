@@ -19,9 +19,9 @@ function getPDO(bool $isCreateUserTable = false): PDO
             name VARCHAR(64) NOT NULL,
             email VARCHAR(255) NOT NULL,
             password VARCHAR(30),
-            deleted_at TEXT DEFAULT(NULL),
-            created_at TEXT DEFAULT(NULL),
-            updated_at TEXT DEFAULT(NULL)
+            deleted_at INTEGER DEFAULT(NULL),
+            created_at INTEGER DEFAULT(NULL),
+            updated_at INTEGER DEFAULT(NULL)
         )');
     }
 

@@ -5,7 +5,7 @@
             "*.spec.php",
             "*.test.php"
         ],
-        "bail": false,
+        "bail": true,
         "log": {
             "logo": true,
             "color": true,

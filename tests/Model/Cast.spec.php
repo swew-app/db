@@ -29,4 +29,4 @@ it('cast get', function () {
 //    dd($item);
 
     expect($item['email'])->toBe('123@TEST.COM');
-})->only();
+});

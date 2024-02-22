@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Swew\Db\ModelConfig;
+use Swew\Db\Utils\Obj;
 use Swew\Testing\Model\Stub\MemoryCache;
 use Swew\Testing\Model\Stub\UserModel;
 use Swew\Testing\Model\Stub\UserSoftModel;
@@ -75,7 +76,7 @@ it('Model [getFirstItem]', function () {
     $user->email = 't1@test.xx';
     $user->password = '#SALT_secret';
 
-    expect($res)->toEqual($user);
+    expect(Obj::getObjectVars($res))->toEqual(Obj::getObjectVars($user));
 });
 
 it('Model [getItems]', function () {
@@ -93,8 +94,8 @@ it('Model [getItems]', function () {
 
     expect($res[0]->password)->toBe('#SALT_secret');
 
-    expect($res[0])->toEqual($user1);
-    expect($res[1])->toEqual($user2);
+    expect(Obj::getObjectVars($res[0]))->toEqual(Obj::getObjectVars($user1));
+    expect(Obj::getObjectVars($res[1]))->toEqual(Obj::getObjectVars($user2));
 });
 
 it('Model [update WHERE]', function () {

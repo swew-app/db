@@ -15,20 +15,22 @@ class CastModel extends Model
         return true;
     }
 
-    protected function castSet(): array
+    protected function cast(): array
     {
         return [
-            'email' => function (string $mail): string {
-                [$prefix, $addr] = explode('@', $mail);
+            'to' => [
+                'email' => function (string $mail): string {
+                    [$prefix, $addr] = explode('@', $mail);
 
-                if ($addr === 'text.xxx') {
-                    return "{$prefix}@TEST.COM";
-                }
+                    if ($addr === 'test.xxx') {
+                        return "{$prefix}@TEST.COM";
+                    }
 
-                return $mail;
-            },
+                    return $mail;
+                },
 
-            'password' => fn(string $str): string => 'SECRET',
+                'password' => fn(string $str): string => 'SECRET',
+            ],
         ];
     }
 }
