@@ -16,11 +16,28 @@ final class ModelConfig
 
     private static ?PDO $pdo = null;
 
-    public static function setPDO(PDO $pdo): void
+    private static array $options = [
+        PDO::ATTR_EMULATE_PREPARES         => 0,
+        PDO::ATTR_ERRMODE                  => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE       => PDO::FETCH_ASSOC,
+        PDO::ATTR_TIMEOUT                  => 10,
+        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => 0,
+//        PDO::MYSQL_ATTR_INIT_COMMAND       => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
+//        PDO::ATTR_STRINGIFY_FETCHES => true,
+    ];
+
+    public static function setPDO(PDO $pdo, bool $useConfigOptions = true): void
     {
         if (self::$pdo && self::$pdo !== $pdo) {
             throw new LogicException('PDO already exists');
         }
+
+        if ($useConfigOptions) {
+            foreach (self::$options as $attribute => $value) {
+                $pdo->setAttribute($attribute, $value);
+            }
+        }
+
         self::$pdo = $pdo;
     }
 
@@ -72,5 +89,15 @@ final class ModelConfig
     public static function getTablePrefix(): string
     {
         return self::$tablePrefix;
+    }
+
+    public static function getOptions(): array
+    {
+        return self::$options;
+    }
+
+    public static function setOptions(array $options): void
+    {
+        self::$options = $options;
     }
 }

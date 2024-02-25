@@ -160,12 +160,12 @@ class ExecuteQuery
         return $this->model->castValues($result);
     }
 
-    public function getFirstItem(): Model
+    public function getFirstItem(): ?Model
     {
         $result = $this->getFirst();
 
         if (! is_array($result)) {
-            throw new LogicException('Wrong query for get result');
+            return null;
         }
 
         return $this->fillDto($result);
@@ -424,11 +424,8 @@ class ExecuteQuery
 
     /**
      * Bind values to their parameters in the given statement.
-     *
-     * @param  \PDOStatement  $statement
-     * @param  array  $bindings
      */
-    private function bindValues($statement, $bindings): void
+    private function bindValues(PDOStatement $statement, array $bindings): void
     {
         foreach ($bindings as $key => $value) {
             $statement->bindValue(

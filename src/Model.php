@@ -199,7 +199,7 @@ abstract class Model
     //#endregion
 
 
-    final public function getLastId(): mixed
+    final public function getLastId(): int|string|false
     {
         $id = $this->id();
 
