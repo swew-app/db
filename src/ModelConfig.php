@@ -18,7 +18,7 @@ final class ModelConfig
 
     private static array $options = [
         PDO::ATTR_EMULATE_PREPARES => 0,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        // PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_TIMEOUT => 10,
         PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => 0,
@@ -29,12 +29,11 @@ final class ModelConfig
     /**
      * @param  string  $dsn 'pgsql:host=localhost;port=5432;dbname=testdb'
      */
-    public static function init(string $dsn, ?string $username = null, ?string $password = null, ?array $options = null): void
+    public static function init(string $dsn, ?string $username = null, ?string $password = null, array $options = []): void
     {
-        $options = $options ?? self::$options;
-        $pdo = new PDO($dsn, $username, $password, $options);
+        $pdo = new PDO($dsn, $username, $password, [...self::$options, ...$options]);
 
-        self::setPDO($pdo);
+        self::setPDO($pdo, false);
     }
 
     public static function setPDO(PDO $pdo, bool $useConfigOptions = true): bool
