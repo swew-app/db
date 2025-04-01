@@ -39,7 +39,7 @@ Migrate::up(function (Migrator $table) {
     $table->string('password', 64)->default('123456');
     $table->text('description')->fulltext();
     $table->integer('rating')->nullable();
-    
+
     // $table->softDeletable(); // If need
     $table->timestamps();
 });
@@ -110,19 +110,16 @@ class UserModel extends Model {
         return true;
     }
 
-    protected function getCast(): array
-    {
-         return [
-            // Default casting, created_at and updated_at - INT
-            'created_at' => fn (mixed $timeStamp) => $timeStamp ? strtotime($timeStamp) : '',
-            'updated_at' => fn (mixed $timeStamp) => $timeStamp ? strtotime($timeStamp) : '',
-        ];
-    }
 
-    protected function setCast(): array
-    {
+    protected function cast(): array {
         return [
-            'password' => fn ($str) => password_hash($str, PASSWORD_BCRYPT),
+            'to' => [
+                'password' => fn ($str) => password_hash($str, PASSWORD_BCRYPT),
+            ],
+            'from' => [
+                'created_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+                'updated_at' => fn(int|string|null $timeStamp) => $timeStamp ? date('Y.m.d - H:i:s', (int)$timeStamp) : '',
+            ],
         ];
     }
 
@@ -150,12 +147,11 @@ class UserModel extends Model {
 
 ## GET
 ```php
-UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->get(); // array
-UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirst(); // item
-UserModel::vm()->query(UserModel::MOST_POPULAR_USER)
-    ->offset(2)
-    ->limit(1)
-    ->getFirst();
+// const MOST_POPULAR_USER = 'SELECT id, login, name FROM [TABLE] WHERE rating >= 9';
+// const FIND_BY_NAME = 'SELECT id, login, name FROM [TABLE] WHERE name = ?';
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->get(); // array list
+UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirst(); // array data with first item with limit
+UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getFirst();
 
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getFirstItem(); // UserModel
 UserModel::vm()->query(UserModel::FIND_BY_NAME, 'Jack')->getItems(); // UserModel[]
@@ -173,6 +169,7 @@ UserModel::vm()->query(UserModel::MOST_POPULAR_USER)->getMap(
 > alias for [save](#save)
 
 ```php
+// const INSERT_LOGIN_NAME = 'INSERT INTO [TABLE] (login, name) VALUES (:login, :name)';
 $user = new UserModel();
 
 $user->login = 'Mr 007';
@@ -198,7 +195,9 @@ UserModel::vm()
 ```
 
 ## UPDATE
+
 ```php
+// const UPDATE_NAME = 'UPDATE [TABLE] SET name = ?';
 UserModel::vm()
     ->query(UserModel::UPDATE_NAME, 'Garry')
     ->where('id', 1)
@@ -227,12 +226,15 @@ $count = UserModel::vm()
 ## JOIN
 
 ```php
+// const JOIN_COMMENT = 'SELECT [T1].name, [T2].comment FROM [T1] JOIN [T2] ON [T1].id=[T2].user_id';
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->get();
 ```
 ## PAGINATE
 
 ```php
 // Paginate
+
+// const JOIN_COMMENT = 'SELECT [T1].name, [T2].comment FROM [T1] JOIN [T2] ON [T1].id=[T2].user_id';
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPages($pageNumber = 1, $perPage = 10);
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPagesWithCount();
 
@@ -248,6 +250,8 @@ UserModel::vm()->query(UserModel::JOIN_COMMENT)->getPagesWithCount();
 
 ```php
 // cursor pagination
+
+// const JOIN_COMMENT = 'SELECT [T1].name, [T2].comment FROM [T1] JOIN [T2] ON [T1].id=[T2].user_id';
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageNumber = 2, $perPage = 10);
 
 // Result
@@ -264,6 +268,7 @@ UserModel::vm()->query(UserModel::JOIN_COMMENT)->getCursorPages($id = 11, $pageN
 ## Transaction
 
 ```php
+// const UPDATE_NAME = 'UPDATE [TABLE] SET name = ?';
 $isOk = UserModel::transaction(function () {
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Leo')->where('id', 1)->exec();
     UserModel::vm()->query(UserModel::UPDATE_NAME, 'Don')->where('id', 2)->exec();
@@ -271,7 +276,7 @@ $isOk = UserModel::transaction(function () {
 });
 ```
 
-## Query without sql
+# Query without sql
 
 ### select
 
@@ -332,12 +337,12 @@ $user->email = 's2@mail.xx';
 //     'name' => 'Master Splinter',
 //     'email' => 's2@mail.xx',
 // ];
-UserModel::vm()->update($user)->where('id', 1)->exec();
+UserModel::vm()->where('id', 1)->update($user);
 ```
 ### delete
 
 ```php
-UserModel::vm()->delete()->where('id', 1)->exec();
+UserModel::vm()->where('id', 1)->delete();
 ```
 ### soft delete
 
@@ -345,7 +350,7 @@ For soft delete to work, your table must have a deleted_at field of type DATETIM
 In your model, there must be a softDelete() method that returns true.
 
 ```php
-UserModel::vm()->softDelete()->where('id', 1)->exec();
+UserModel::vm()->where('id', 1)->softDelete();
 ```
 
 ### where
@@ -378,6 +383,15 @@ UserModel::vm()->select()->whereIn('id', [1, 2, 3])->exec();
 
 ```php
 UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
+```
+
+## limit &  offset
+
+```php
+UserModel::vm()->select()
+    ->offset(2)
+    ->limit(1)
+    ->get();
 ```
 
 # Cache

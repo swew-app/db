@@ -88,7 +88,7 @@ abstract class Model
             $exq->where('deleted_at', null);
         }
 
-        return $exq;
+        return $exq->exec();
     }
 
     protected function hasTimestamp(): bool
@@ -339,7 +339,7 @@ abstract class Model
 
         $exq->setData(array_values($data));
 
-        return $exq;
+        return $exq->exec();
     }
 
     public function delete(): ExecuteQuery
@@ -354,7 +354,7 @@ abstract class Model
 
         $sql = $this->getSqlWithTableName($sql);
 
-        return new ExecuteQuery($this->getPDO(), $sql, $this);
+        return (new ExecuteQuery($this->getPDO(), $sql, $this))->exec();
     }
 
     private function addTimestampValues(array &$data, bool $isCreate): void

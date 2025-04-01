@@ -1,7 +1,4 @@
 {
-    "cSpell.words": [
-        "ERRMODE"
-    ],
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
