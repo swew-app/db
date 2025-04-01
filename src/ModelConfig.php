@@ -29,7 +29,7 @@ final class ModelConfig
     /**
      * @param  string  $dsn 'pgsql:host=localhost;port=5432;dbname=testdb'
      */
-    public static function init(string $dsn, string $username, string $password, ?array $options = null): void
+    public static function init(string $dsn, ?string $username = null, ?string $password = null, ?array $options = null): void
     {
         $options = $options ?? self::$options;
         $pdo = new PDO($dsn, $username, $password, $options);

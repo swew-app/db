@@ -10,10 +10,10 @@ PHP - should be light and fast!!!
 
 # Packages developed by SWEW
 
-> - [swew/cli](https://packagist.org/packages/swew/cli) - A command-line interface program with formatting and text entry functions.
-> - [swew/test](https://packagist.org/packages/swew/test) - A test framework that is designed to fix the fatal flaw of other test frameworks.
-> - [swew/db](https://packagist.org/packages/swew/db) - A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries.
-> - [swew/dd](https://packagist.org/packages/swew/dd) - The simplest way to debug variables. As in Laravel.
+> -   [swew/cli](https://packagist.org/packages/swew/cli) - A command-line interface program with formatting and text entry functions.
+> -   [swew/test](https://packagist.org/packages/swew/test) - A test framework that is designed to fix the fatal flaw of other test frameworks.
+> -   [swew/db](https://packagist.org/packages/swew/db) - A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries.
+> -   [swew/dd](https://packagist.org/packages/swew/dd) - The simplest way to debug variables. As in Laravel.
 
 ---
 
@@ -21,6 +21,15 @@ PHP - should be light and fast!!!
 
 ```sh
 composer require swew/db
+```
+
+```php
+<?php
+
+use Swew\Db\ModelConfig;
+
+// PDO connection init
+ModelConfig::init($dsn, $username, $password);
 ```
 
 # Migration
@@ -146,6 +155,7 @@ class UserModel extends Model {
 ---
 
 ## GET
+
 ```php
 // const MOST_POPULAR_USER = 'SELECT id, login, name FROM [TABLE] WHERE rating >= 9';
 // const FIND_BY_NAME = 'SELECT id, login, name FROM [TABLE] WHERE name = ?';
@@ -229,6 +239,7 @@ $count = UserModel::vm()
 // const JOIN_COMMENT = 'SELECT [T1].name, [T2].comment FROM [T1] JOIN [T2] ON [T1].id=[T2].user_id';
 UserModel::vm()->query(UserModel::JOIN_COMMENT)->get();
 ```
+
 ## PAGINATE
 
 ```php
@@ -339,11 +350,13 @@ $user->email = 's2@mail.xx';
 // ];
 UserModel::vm()->where('id', 1)->update($user);
 ```
+
 ### delete
 
 ```php
 UserModel::vm()->where('id', 1)->delete();
 ```
+
 ### soft delete
 
 For soft delete to work, your table must have a deleted_at field of type DATETIME or (TEXT for SQLite) with a default value of NULL.
@@ -385,7 +398,7 @@ UserModel::vm()->select()->whereIn('id', [1, 2, 3])->exec();
 UserModel::vm()->select()->whereNotIn('id', [1, 2, 3])->exec();
 ```
 
-## limit &  offset
+## limit & offset
 
 ```php
 UserModel::vm()->select()
