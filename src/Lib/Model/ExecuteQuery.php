@@ -31,8 +31,7 @@ class ExecuteQuery
         private string $sql,
         readonly private Model $model,
         readonly private ?CacheInterface $cache = null
-    ) {
-    }
+    ) {}
 
     public function id(): mixed
     {
@@ -180,7 +179,7 @@ class ExecuteQuery
         }
 
         return array_map(
-            fn ($data) => $this->fillDto($data),
+            fn($data) => $this->fillDto($data),
             $results
         );
     }
@@ -220,7 +219,7 @@ class ExecuteQuery
                 $data[] = $v[1];
             }
 
-            $where[] = '('.implode(' OR ', $orWhere).')';
+            $where[] = '(' . implode(' OR ', $orWhere) . ')';
         }
 
         if (count($this->whereIn) > 0) {
@@ -252,22 +251,22 @@ class ExecuteQuery
                 implode(' AND ', $where),
             ];
 
-            $sql .= ' WHERE ('.implode(' AND ', $where).')';
+            $sql .= ' WHERE (' . implode(' AND ', $where) . ')';
         }
 
         if (count($this->groupBy) > 0) {
-            $sql .= ' GROUP BY '.implode(', ', $this->groupBy);
+            $sql .= ' GROUP BY ' . implode(', ', $this->groupBy);
         }
 
         if (count($this->orderBy) > 0) {
-            $sql .= ' ORDER BY '.implode(', ', $this->orderBy);
+            $sql .= ' ORDER BY ' . implode(', ', $this->orderBy);
         }
 
         if ($this->limit > 0) {
             if ($this->offset > 0) {
-                $sql .= ' LIMIT '.$this->offset.', '.$this->limit;
+                $sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
             } else {
-                $sql .= ' LIMIT '.$this->limit;
+                $sql .= ' LIMIT ' . $this->limit;
             }
         }
 
@@ -415,7 +414,16 @@ class ExecuteQuery
     {
         ['sql' => $sql, 'data' => $castedData] = $this->toSql($data ?: $this->data);
 
-        $this->sth = $this->pdo->prepare($sql);
+        $sth = $this->pdo->prepare($sql);
+
+        if ($sth === false) {
+            throw new \Exception(
+                'PDO prepare exception: ' . $this->pdo->errorInfo()[2],
+                $this->pdo->errorInfo()[1],
+            );
+        }
+
+        $this->sth = $sth;
 
         $this->bindValues($this->sth, $castedData);
 
@@ -450,7 +458,7 @@ class ExecuteQuery
     public function cache(int $seconds = 0): self
     {
         if (is_null($this->cache)) {
-            throw new LogicException('Set getCache method in "'.get_class($this->model).'"');
+            throw new LogicException('Set getCache method in "' . get_class($this->model) . '"');
         }
 
         $this->cacheConfig['expiredSeconds'] = $seconds;
