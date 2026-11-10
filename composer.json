@@ -31,6 +31,7 @@
             "/tests/"
         ]
     },
+    "bin": ["bin/swew-migrate"],
     "autoload-dev": {
         "psr-4": {
             "Swew\\Testing\\": "tests/"

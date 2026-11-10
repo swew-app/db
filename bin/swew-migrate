@@ -1,0 +1,49 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Swew\Db\Migrator;
+
+require $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+
+try {
+    $command = $argv[1] ?? '';
+    $directory = $argv[2] ?? 'migrations';
+    if (!in_array($command, ['create', 'up', 'down', 'status'], true)
+        || ($command === 'create' && !isset($argv[3]))
+        || count($argv) > ($command === 'create' ? 4 : 3)) {
+        throw new InvalidArgumentException('Usage: swew-migrate <create|up|down|status> [directory] [name]');
+    }
+    if ($command === 'create') {
+        echo Migrator::create($directory, $argv[3]) . PHP_EOL;
+        exit(0);
+    }
+    $dsn = getenv('SWEW_DB_DSN');
+    if ($dsn === false || $dsn === '') {
+        throw new InvalidArgumentException('Set SWEW_DB_DSN (and optionally SWEW_DB_USER / SWEW_DB_PASSWORD).');
+    }
+    $username = getenv('SWEW_DB_USER');
+    $password = getenv('SWEW_DB_PASSWORD');
+    $pdo = new PDO($dsn, $username === false ? null : $username, $password === false ? null : $password);
+    $migrator = new Migrator($directory, $pdo);
+    switch ($command) {
+        case 'up':
+            foreach ($migrator->up() as $version) {
+                echo "Applied {$version}" . PHP_EOL;
+            }
+            break;
+        case 'down':
+            $version = $migrator->down();
+            echo ($version === null ? 'Nothing to roll back.' : "Rolled back {$version}") . PHP_EOL;
+            break;
+        case 'status':
+            foreach ($migrator->status() as $migration) {
+                echo ($migration['applied'] ? 'applied' : 'pending') . "\t" . $migration['name'] . PHP_EOL;
+            }
+            break;
+    }
+} catch (Throwable $error) {
+    fwrite(STDERR, $error->getMessage() . PHP_EOL);
+    exit(1);
+}

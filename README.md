@@ -49,6 +49,68 @@ vendor/bin/mago analyze
 vendor/bin/mago lint
 ```
 
+# SQL migrations
+
+SQL migrations for SQLite, PostgreSQL, and MySQL; no extra dependencies.
+
+```sh
+# Installed package: vendor/bin/swew-migrate
+# From this repository: php bin/swew-migrate
+vendor/bin/swew-migrate create migrations create_users
+```
+
+Edit the generated `migrations/<timestamp>_create_users.sql`:
+
+```sql
+-- +swew Up
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- +swew Down
+DROP TABLE users;
+```
+
+```sh
+export SWEW_DB_DSN='sqlite:app.sqlite'
+# For PostgreSQL/MySQL, optionally set SWEW_DB_USER and SWEW_DB_PASSWORD.
+vendor/bin/swew-migrate status migrations
+vendor/bin/swew-migrate up migrations     # Apply all pending migrations
+vendor/bin/swew-migrate down migrations   # Roll back only the latest migration
+```
+
+The directory defaults to `migrations`. Files use `<positive integer>_<name>.sql`;
+versions must be unique and run in numeric order. Creation uses timestamps (one
+migration per second). Applied versions are stored in `swew_migrations`, independently
+of model table prefixes. Missing/renamed applied files and out-of-order additions
+are rejected. Do not edit an applied migration; add a new one instead.
+
+Use directly with the configured model connection or an explicit PDO:
+
+```php
+use Swew\Db\Migrator;
+
+$migrator = new Migrator(__DIR__ . '/migrations'); // Uses ModelConfig::getPDO()
+// $migrator = new Migrator(__DIR__ . '/migrations', $pdo);
+$migrator->up();      // Applied version numbers
+$migrator->status();  // Rows: version, name, applied
+$migrator->down();    // Rolled-back version, or null
+```
+
+Each SQLite/PostgreSQL migration and its version update run in one transaction.
+Put `-- +swew NO TRANSACTION` before `Up` for SQL that cannot run transactionally.
+MySQL runs without transactions because DDL implicitly commits. Failed
+nontransactional migrations may leave partial changes; inspect and repair before
+retrying. Migration SQL must not manage its own transactions.
+
+`-- +swew StatementBegin` / `-- +swew StatementEnd` blocks are accepted for
+functions and triggers. Each direction is sent to PDO as a complete SQL batch,
+so semicolons inside strings or procedure bodies are preserved. Annotations must
+be standalone lines, not inside SQL strings. Other directives and Go
+migrations are not supported.
+Run only one migration process at a time (no cross-process locking).
+
 # DataBase queries
 
 # Model
