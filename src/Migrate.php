@@ -79,6 +79,8 @@ class Migrate
         foreach ($filesList as $filePath) {
             self::$migrationFiles[] = $filePath;
         }
+
+        usort(self::$migrationFiles, fn ($a, $b) => strcmp(basename($a), basename($b)));
     }
 
     private static function loadMigrationsStatistic(): void
@@ -114,7 +116,7 @@ class Migrate
         }
     }
 
-    private static function migrate(array $callbacks): bool
+    private static function migrate(array $callbacks, bool $isUp): bool
     {
         $queries = [];
 
@@ -126,9 +128,15 @@ class Migrate
             $queries[] = $migrator->getSql();
         }
 
-        return MigrationModel::transaction(function () use ($queries) {
+        return MigrationModel::transaction(function () use ($queries, $isUp) {
             foreach ($queries as $query) {
                 MigrationModel::vm()->query($query)->exec();
+            }
+
+            if ($isUp) {
+                self::updateMigrationTable();
+            } else {
+                MigrationModel::vm()->delete()->whereIn('migration_file', self::getMigratedFiles())->exec();
             }
         }, true);
     }
@@ -146,13 +154,7 @@ class Migrate
 
         self::loadCallbacks();
 
-        $isDone = self::migrate(self::$upCallbackList);
-
-        if ($isDone) {
-            self::updateMigrationTable();
-        }
-
-        return $isDone;
+        return self::migrate(self::$upCallbackList, true);
     }
 
     private static function runDown(int $batchSteps = 0): bool
@@ -171,14 +173,14 @@ class Migrate
             $migratedFileNames = MigrationModel::vm()
                 ->select('migration_file')
                 ->whereIn('batch', $steps)
-                ->orderBy('batch', 'DESC')
+                ->orderBy('id', 'DESC')
                 ->getMap(
                     fn (array $v) => $v['migration_file']
                 );
         } else {
             $migratedFileNames = MigrationModel::vm()
                 ->select('migration_file')
-                ->orderBy('batch', 'DESC')
+                ->orderBy('id', 'DESC')
                 ->getMap(
                     fn (array $v) => $v['migration_file']
                 );
@@ -195,19 +197,13 @@ class Migrate
             }
         );
 
+        usort(self::$migrationFiles, fn ($a, $b) =>
+            array_search(basename($a), $migratedFileNames) <=> array_search(basename($b), $migratedFileNames)
+        );
+
         self::loadCallbacks();
 
-        $isDone = self::migrate(self::$downCallbackList);
-
-        if ($isDone) {
-            if (count($steps) > 0) {
-                MigrationModel::vm()->delete()->whereIn('batch', $steps)->exec();
-            } else {
-                MigrationModel::vm()->delete()->exec();
-            }
-        }
-
-        return $isDone;
+        return self::migrate(self::$downCallbackList, false);
     }
 
     private static function updateMigrationTable(): void

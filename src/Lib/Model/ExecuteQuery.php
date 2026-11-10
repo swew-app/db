@@ -52,25 +52,33 @@ class ExecuteQuery
 
     public function execMany(?array $data = null): bool
     {
-        ['sql' => $sql, 'data' => $castedData] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql] = $this->toSql([]);
+        $started = false;
 
         try {
-            $this->pdo->beginTransaction();
+            $started = $this->pdo->beginTransaction();
             $sth = $this->pdo->prepare($sql);
 
-            foreach ($castedData as $value) {
-                $value = $this->model->castSetValues($value);
+            foreach ($data ?? $this->data as $value) {
+                ['data' => $bindings] = $this->toSql($this->model->castSetValues($value));
+                if (isset($previousBindings) && (array_diff_key($bindings, $previousBindings) || array_diff_key($previousBindings, $bindings))) {
+                    throw new LogicException('Batch rows must have the same parameters');
+                }
+                $previousBindings = $bindings;
+                $this->bindValues($sth, $bindings);
 
-                $this->bindValues($sth, $value);
-
-                $sth->execute($value);
+                if (! $sth->execute()) {
+                    throw new \PDOException($sth->errorInfo()[2]);
+                }
             }
 
             $this->pdo->commit();
 
             return true;
-        } catch (\Exception $e) {
-            $this->pdo->rollBack();
+        } catch (\Throwable $e) {
+            if ($started && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
 
             return false;
         }
@@ -79,10 +87,10 @@ class ExecuteQuery
     public function setData(array|Model $data): self
     {
         if ($data instanceof Model) {
-            $data = Obj::getObjectVars($data);
+            $data = $this->model->getFilteredDataWithoutId(Obj::getObjectVars($data));
         }
 
-        $this->data = $this->model->getFilteredDataWithoutId($data);
+        $this->data = $data;
 
         return $this;
     }
@@ -109,7 +117,7 @@ class ExecuteQuery
         };
 
         if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
-            $this->createCacheKey();
+            $this->createCacheKey('all');
 
             $results = Cache::remember(
                 $this->cache,
@@ -140,7 +148,7 @@ class ExecuteQuery
         };
 
         if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
-            $this->createCacheKey();
+            $this->createCacheKey('first');
 
             $result = Cache::remember(
                 $this->cache,
@@ -201,7 +209,7 @@ class ExecuteQuery
 
     public function toSql(?array $data = null): array
     {
-        $data = $data ?: $this->data ?: [];
+        $data = $data ?? $this->data;
         $sql = $this->sql;
         $where = [];
         $orWhere = [];
@@ -209,14 +217,18 @@ class ExecuteQuery
         if (count($this->where) > 0) {
             foreach ($this->where as $v) {
                 $where[] = $v[0];
-                $data[] = $v[1];
+                if (array_key_exists(1, $v)) {
+                    $data[] = $v[1];
+                }
             }
         }
 
         if (count($this->orWhere) > 0) {
             foreach ($this->orWhere as $v) {
                 $orWhere[] = $v[0];
-                $data[] = $v[1];
+                if (array_key_exists(1, $v)) {
+                    $data[] = $v[1];
+                }
             }
 
             $where[] = '(' . implode(' OR ', $orWhere) . ')';
@@ -226,7 +238,7 @@ class ExecuteQuery
             foreach ($this->whereIn as $v) {
                 $valuePlaces = array_fill(0, count($v[1]), '?');
                 $valuePlaces = implode(', ', $valuePlaces);
-                $where[] = "`{$v[0]}` IN ($valuePlaces)";
+                $where[] = $v[1] === [] ? '0 = 1' : "`{$v[0]}` IN ($valuePlaces)";
 
                 foreach ($v[1] as $val) {
                     $data[] = $val;
@@ -306,9 +318,6 @@ class ExecuteQuery
 
     public function whereIn(string $key, array $values): self
     {
-        if (count($values) === 0) {
-            return $this;
-        }
         $this->whereIn[] = [$key, $values];
 
         return $this;
@@ -344,8 +353,19 @@ class ExecuteQuery
 
         $val = $this->model->castSetValue($key, $val);
 
+        $comp = strtoupper(trim($comp));
+        if (! in_array($comp, ['=', '!=', '<>', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'IS', 'IS NOT'], true)) {
+            throw new LogicException('Invalid comparison operator');
+        }
+
         if (is_null($val)) {
-            $comp = 'IS ';
+            $comp = match ($comp) {
+                '=', 'IS' => 'IS NULL',
+                '!=', '<>', 'IS NOT' => 'IS NOT NULL',
+                default => throw new LogicException('Invalid NULL comparison'),
+            };
+
+            return ["`$key` $comp"];
         }
 
         return ["`$key` $comp ?", $val];
@@ -399,10 +419,9 @@ class ExecuteQuery
     private function fillDto(array $value): Model
     {
         $model = clone $this->model;
-        $value = $this->model->castValues($value);
 
         foreach ($value as $key => $val) {
-            if (isset($model->$key)) {
+            if (property_exists($model, $key)) {
                 $model->$key = $val;
             }
         }
@@ -412,7 +431,7 @@ class ExecuteQuery
 
     private function prepareAndExecute(?array $data = null): bool
     {
-        ['sql' => $sql, 'data' => $castedData] = $this->toSql($data ?: $this->data);
+        ['sql' => $sql, 'data' => $castedData] = $this->toSql($data);
 
         $sth = $this->pdo->prepare($sql);
 
@@ -427,7 +446,7 @@ class ExecuteQuery
 
         $this->bindValues($this->sth, $castedData);
 
-        return $this->isDone = $this->sth->execute($castedData);
+        return $this->isDone = $this->sth->execute();
     }
 
     /**
@@ -440,6 +459,8 @@ class ExecuteQuery
                 is_string($key) ? $key : $key + 1,
                 $value,
                 match (true) {
+                    is_null($value) => PDO::PARAM_NULL,
+                    is_bool($value) => PDO::PARAM_BOOL,
                     is_int($value) => PDO::PARAM_INT,
                     is_resource($value) => PDO::PARAM_LOB,
                     default => PDO::PARAM_STR
@@ -448,11 +469,11 @@ class ExecuteQuery
         }
     }
 
-    private function createCacheKey(): string
+    private function createCacheKey(string $fetchMode): string
     {
         ['sql' => $sql, 'data' => $castedData] = $this->toSql($this->data);
 
-        return $this->cacheConfig['key'] = Cache::makeKey($sql, $castedData);
+        return $this->cacheConfig['key'] = Cache::makeKey($sql, $castedData, $fetchMode);
     }
 
     public function cache(int $seconds = 0): self

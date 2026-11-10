@@ -16,11 +16,8 @@ class Cache
     public static function makeKey(mixed ...$args): string
     {
         $key = serialize($args);
-        $hash = sha1($key);
-        $prefix = substr($hash, 0, 2);
-        $suffix = substr($hash, 2);
 
-        return $prefix.DIRECTORY_SEPARATOR.$suffix;
+        return sha1($key);
     }
 
     public static function makeCacheItem(mixed $value, int $seconds = 0): array

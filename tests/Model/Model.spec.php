@@ -303,7 +303,10 @@ it('Model [update]', function () {
     //     'email' => 's2@mail.xx',
     // ];
 
-    UserModel::vm()->update($user)->where('id', 1)->exec();
+    $query = UserModel::vm()->update($user)->where('id', 1);
+    expect($query->isDone())->toBe(false);
+    $query->exec();
+    expect(UserModel::vm()->select('name')->where('id', 2)->getValue())->toBe('Leo');
 
     $res = UserModel::vm()->select('name', 'password')->where('email', 's2@mail.xx')->getFirst();
 
@@ -328,7 +331,11 @@ it('Model [delete]', function () {
     $count = UserModel::vm()->count()->where('id', 1)->getValue();
     expect($count)->toBe(1);
 
-    UserModel::vm()->delete()->where('id', 1)->exec();
+    $before = UserModel::vm()->count()->getValue();
+    $query = UserModel::vm()->delete()->where('id', 1);
+    expect($query->isDone())->toBe(false);
+    $query->exec();
+    expect(UserModel::vm()->count()->getValue())->toBe($before - 1);
 
     $count = UserModel::vm()->count()->where('id', 1)->getValue();
     expect($count)->toBe(0);
@@ -377,4 +384,89 @@ it('Model [cache]', function () {
         ->getFirst();
 
     expect($cache->cache)->toHaveCount(1);
+
+    $rows = UserSoftModel::vm()->query($sql)->where('id', 3)->limit(1)->cache()->get();
+    expect($rows[0]['id'])->toBe(3);
+});
+
+it('Model [failed transactions roll back]', function () {
+    $pdo = ModelConfig::getPDO();
+    foreach ([new RuntimeException('failed'), new TypeError('failed')] as $error) {
+        foreach ([false, true] as $rethrow) {
+            $callback = function () use ($error) {
+                UserModel::vm()->insert(['name' => 'Rollback', 'email' => 'rollback@test.xx']);
+                throw $error;
+            };
+            if ($rethrow) {
+                expect(fn () => UserModel::transaction($callback, true))->toThrow(get_class($error));
+            } else {
+                expect(UserModel::transaction($callback))->toBe(false);
+            }
+            expect($pdo->inTransaction())->toBe(false);
+            expect(UserModel::vm()->count()->where('email', 'rollback@test.xx')->getValue())->toBe(0);
+        }
+    }
+
+    $pdo->beginTransaction();
+    expect(UserModel::transaction(fn () => null))->toBe(false);
+    expect(UserModel::vm()->query(UserModel::ADD_USER)->execMany([]))->toBe(false);
+    expect($pdo->inTransaction())->toBe(true);
+    $pdo->rollBack();
+});
+
+it('Model [parameter values and types]', function () {
+    $model = UserModel::vm();
+    expect($model->query('SELECT :id', ['id' => 42])->getValue())->toBe(42);
+    expect($model->query('SELECT ? = 1', [1])->getValue())->toBe(1);
+    expect($model->query('SELECT ? = 0', [false])->getValue())->toBe(1);
+    expect($model->query('SELECT ? IS NULL', [null])->getValue())->toBe(1);
+    expect($model->query('SELECT 1', [42])->toSql([])['data'])->toBe([]);
+});
+
+it('Model [empty IN and NULL comparisons]', function () {
+    $model = UserModel::vm();
+    expect($model->count()->whereIn('id', [])->getValue())->toBe(0);
+    expect($model->count()->whereNotIn('id', [])->getValue())->toBe($model->count()->getValue());
+    expect($model->count()->where('deleted_at', '!=', null)->getValue())->toBe(1);
+    expect(fn () => $model->select()->where('id', '= 1 OR id =', 1))->toThrow(LogicException::class);
+});
+
+it('Model [execMany filters and rollback]', function () {
+    $model = UserModel::vm();
+    $model->setCurrentQueryPDO(getPDO(true));
+    $model->insertMany(getFakeUsers(2));
+    expect($model->query(UserModel::UPDATE_NAME)->where('id', 1)->execMany([['A'], ['B']]))->toBe(true);
+    expect($model->select('name')->orderBy('id')->getMap(fn ($row) => $row['name']))->toBe(['B', 'Jon 2']);
+    expect($model->query(UserModel::ADD_USER)->execMany([
+        ['name' => 'Good', 'email' => 'good@test.xx', 'password' => 'secret'],
+        ['name' => null, 'email' => 'bad@test.xx', 'password' => 'secret'],
+    ]))->toBe(false);
+    expect($model->count()->getValue())->toBe(2);
+    expect($model->query(UserModel::ADD_USER)->execMany([
+        ['name' => 'Good', 'email' => 'good@test.xx', 'password' => 'secret'],
+        ['name' => 'Missing password', 'email' => 'missing@test.xx'],
+    ]))->toBe(false);
+    expect($model->count()->getValue())->toBe(2);
+});
+
+it('Model [PDO options keep numeric attribute keys]', function () {
+    $pdo = ModelConfig::getPDO();
+    ModelConfig::removePDO();
+    try {
+        ModelConfig::init('sqlite::memory:', options: [PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_NUM]);
+        expect(ModelConfig::getPDO()->query('SELECT 42')->fetch())->toBe([42]);
+    } finally {
+        ModelConfig::removePDO();
+        ModelConfig::setPDO($pdo, false);
+    }
+});
+
+it('Model [table aliases]', function () {
+    $model = new class extends UserModel {
+        protected function mapTable(): array
+        {
+            return ['T1' => $this, 'T2' => UserModel::class, 'T3' => 'comments'];
+        }
+    };
+    expect($model->getSqlWithTableName('[TABLE] [T1] [T2] [T3]'))->toBe('users users users comments');
 });

@@ -18,10 +18,9 @@ final class ModelConfig
 
     private static array $options = [
         PDO::ATTR_EMULATE_PREPARES => 0,
-        // PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_TIMEOUT => 10,
-        PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => 0,
         // PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
         // PDO::ATTR_STRINGIFY_FETCHES => true,
     ];
@@ -31,7 +30,7 @@ final class ModelConfig
      */
     public static function init(string $dsn, ?string $username = null, ?string $password = null, array $options = []): void
     {
-        $pdo = new PDO($dsn, $username, $password, [...self::$options, ...$options]);
+        $pdo = new PDO($dsn, $username, $password, $options + self::$options);
 
         self::setPDO($pdo, false);
     }

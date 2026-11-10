@@ -8,7 +8,7 @@ use Swew\Testing\Model\Stub\MemoryCache;
 it('Cache [makeKey]', function () {
     $key = Cache::makeKey('SELECT * FORM [TABLE]', ['id' => 1]);
 
-    expect($key)->toBe('8d/fb68cf0ec348e4ea782c1265415874487f72e3');
+    expect($key)->toBe('8dfb68cf0ec348e4ea782c1265415874487f72e3');
 });
 
 it('Cache [makeCacheItem,getItemValue]', function () {

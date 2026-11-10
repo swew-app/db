@@ -50,7 +50,13 @@ abstract class Model
 
     public function getSqlWithTableName(string $sqlQuery): string
     {
-        $tables = array_map(fn (string $name) => "[$name]", $this->mapTable());
+        $tables = [];
+        foreach ($this->mapTable() as $alias => $table) {
+            if (is_string($table) && is_subclass_of($table, self::class)) {
+                $table = $table::vm();
+            }
+            $tables["[$alias]"] = $table instanceof self ? $table->getTableName() : $table;
+        }
 
         $tables['[TABLE]'] = $this->getTableName();
 
@@ -88,7 +94,7 @@ abstract class Model
             $exq->where('deleted_at', null);
         }
 
-        return $exq->exec();
+        return $exq;
     }
 
     protected function hasTimestamp(): bool
@@ -152,7 +158,7 @@ abstract class Model
                 ],
             ];
 
-            $this->castRules = array_merge_recursive($defaultCasts, $this->cast());
+            $this->castRules = array_replace_recursive($defaultCasts, $this->cast());
         }
 
         return $this->castRules;
@@ -209,14 +215,18 @@ abstract class Model
     public static function transaction(callable $callback, bool $showException = false): bool
     {
         $pdo = self::vm()->getPDO();
+        $started = false;
 
         try {
-            $pdo->beginTransaction();
+            $started = $pdo->beginTransaction();
             $callback();
             $pdo->commit();
 
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            if ($started && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             if ($showException) {
                 throw $e;
             }
@@ -339,7 +349,7 @@ abstract class Model
 
         $exq->setData(array_values($data));
 
-        return $exq->exec();
+        return $exq;
     }
 
     public function delete(): ExecuteQuery
@@ -354,7 +364,7 @@ abstract class Model
 
         $sql = $this->getSqlWithTableName($sql);
 
-        return (new ExecuteQuery($this->getPDO(), $sql, $this))->exec();
+        return new ExecuteQuery($this->getPDO(), $sql, $this);
     }
 
     private function addTimestampValues(array &$data, bool $isCreate): void

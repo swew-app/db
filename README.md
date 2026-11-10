@@ -339,6 +339,9 @@ UserModel::vm()->save([
 
 ### update
 
+`update()` and `delete()` build queries. Add filters, then call `exec()` to execute them.
+Without filters, they affect every row.
+
 ```php
 $user = new UserModel();
 $user->name = 'Master Splinter';
@@ -348,22 +351,22 @@ $user->email = 's2@mail.xx';
 //     'name' => 'Master Splinter',
 //     'email' => 's2@mail.xx',
 // ];
-UserModel::vm()->where('id', 1)->update($user);
+UserModel::vm()->update($user)->where('id', 1)->exec();
 ```
 
 ### delete
 
 ```php
-UserModel::vm()->where('id', 1)->delete();
+UserModel::vm()->delete()->where('id', 1)->exec();
 ```
 
 ### soft delete
 
-For soft delete to work, your table must have a deleted_at field of type DATETIME or (TEXT for SQLite) with a default value of NULL.
+For soft delete to work, your table must have a nullable integer `deleted_at` field (Unix timestamp).
 In your model, there must be a softDelete() method that returns true.
 
 ```php
-UserModel::vm()->where('id', 1)->softDelete();
+UserModel::vm()->delete()->where('id', 1)->exec();
 ```
 
 ### where

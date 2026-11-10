@@ -30,3 +30,23 @@ it('cast get', function () {
 
     expect($item['email'])->toBe('123@TEST.COM');
 });
+
+it('cast overrides and hydration apply once to nullable properties', function () {
+    $model = new class extends UserModel {
+        public ?int $id = null;
+
+        public ?string $created_at = null;
+
+        protected function cast(): array
+        {
+            return ['from' => [
+                'name' => fn ($value) => $value.'!',
+                'created_at' => fn ($value) => 'time:'.$value,
+            ]];
+        }
+    };
+    $query = $model->query("SELECT 42 AS id, 'Jack' AS name, 123 AS created_at");
+    foreach ([$query->getFirstItem(), $query->getItems()[0]] as $item) {
+        expect([$item->id, $item->name, $item->created_at])->toBe([42, 'Jack!', 'time:123']);
+    }
+});

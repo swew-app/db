@@ -53,6 +53,19 @@ it('Migrator [drop table]', function () {
     expect($table->getSql())->toBe($expected);
 });
 
+it('Migrator [reject conflicting table operations]', function () {
+    $table = new Migrator('sqlite');
+    $table->tableCreate('users');
+    expect(fn () => $table->tableCreate('other'))->toThrow(LogicException::class);
+    expect(fn () => $table->tableDrop('users'))->toThrow(LogicException::class);
+
+    $table = new Migrator('sqlite');
+    $table->tableDrop('users');
+    expect(fn () => $table->tableDrop('other'))->toThrow(LogicException::class);
+    expect(fn () => $table->tableCreate('other'))->toThrow(LogicException::class);
+    expect(fn () => $table->string('name'))->toThrow(LogicException::class);
+});
+
 it('Migrator [numbers]', function (string $type) {
     $table = new Migrator($type);
     $table->tableCreate('list');

@@ -73,10 +73,11 @@ final class Migrator
 
     public function tableCreate(string $tableName): self
     {
-        if (! empty($this->table)) {
+        if (! empty($this->table) || ! empty($this->tableForDrop)) {
             throw new LogicException("The table '$tableName' is already set");
         }
 
+        $this->table = $tableName;
         $this->queryTablePrefix = "CREATE TABLE IF NOT EXISTS `$tableName` (";
 
         return $this;
@@ -84,10 +85,11 @@ final class Migrator
 
     public function tableDrop(string $tableName): self
     {
-        if (! empty($this->tableName)) {
+        if (! empty($this->table) || ! empty($this->tableForDrop) || $this->sqlLines !== []) {
             throw new LogicException("The table '$tableName' is already set");
         }
 
+        $this->tableForDrop = $tableName;
         $this->queryTablePrefix = "DROP TABLE `$tableName`";
 
         return $this;
