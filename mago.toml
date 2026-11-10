@@ -1,0 +1,8 @@
+php-version = "8.3"
+
+[source]
+paths = ["src"]
+includes = ["vendor"]
+
+[linter.rules]
+disallowed-functions = { functions = ["dd"], level = "error" }

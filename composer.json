@@ -1,10 +1,9 @@
 {
     "name": "swew/db",
     "type": "library",
-    "description": "A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries. swew/db uses prepared statements to protect against SQL injection attacks and supports multiple database systems.",
+    "description": "A lightweight, fast, and secure PHP library for interacting with databases through SQL models and queries. swew/db uses prepared statements to protect against SQL injection attacks and supports multiple database systems.",
     "keywords": [
         "database",
-        "migrations",
         "model",
         "pdo",
         "orm"
@@ -43,20 +42,20 @@
         "psr/simple-cache": "^3.0"
     },
     "require-dev": {
-        "laravel/pint": "v1.6.0",
-        "phpstan/phpstan": "^1.10.56",
-        "psalm/phar": "^5.19.0",
+        "carthage-software/mago": "^1.59",
         "swew/dd": "^1.4.2",
         "swew/test": "^1.7.0"
     },
     "scripts": {
         "test": "t",
-        "static": "./vendor/psalm/phar/psalm.phar --no-cache",
-        "stan": "vendor/bin/phpstan analyse src --level=5",
-        "code-check": "./vendor/bin/pint",
+        "static": "mago analyze --minimum-report-level=error",
+        "stan": "@static",
+        "lint": "mago lint --minimum-report-level=error",
+        "format": "mago fmt",
+        "code-check": "mago fmt --check",
         "check": [
             "@static",
-            "@stan",
+            "@lint",
             "@code-check"
         ]
     }

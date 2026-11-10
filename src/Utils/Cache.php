@@ -9,9 +9,7 @@ use Psr\SimpleCache\CacheInterface;
 
 class Cache
 {
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
     public static function makeKey(mixed ...$args): string
     {
@@ -20,6 +18,7 @@ class Cache
         return sha1($key);
     }
 
+    /** @return array{data: string, expired: int} */
     public static function makeCacheItem(mixed $value, int $seconds = 0): array
     {
         if ($seconds !== 0) {
@@ -34,20 +33,24 @@ class Cache
 
     public static function getItemValue(array $item): mixed
     {
+        if (!isset($item['data']) || !is_string($item['data'])) {
+            throw new LogicException('Invalid serialized cache data');
+        }
+
         return unserialize($item['data']);
     }
 
     public static function isExpired(array $item): bool
     {
-        if (! array_key_exists('data', $item)) {
+        if (!array_key_exists('data', $item)) {
             return false;
         }
 
-        if (! array_key_exists('expired', $item)) {
+        if (!array_key_exists('expired', $item)) {
             return false;
         }
 
-        if (! is_int($item['expired'])) {
+        if (!is_int($item['expired'])) {
             return false;
         }
 
@@ -73,7 +76,7 @@ class Cache
     {
         $item = $cache->get($key);
 
-        if (! $item || self::isExpired($item)) {
+        if (!is_array($item) || !isset($item['data']) || !is_string($item['data']) || self::isExpired($item)) {
             return null;
         }
 
@@ -88,7 +91,7 @@ class Cache
 
         $data = self::get($cache, $key);
 
-        if (! is_null($data)) {
+        if (!is_null($data)) {
             return $data;
         }
 

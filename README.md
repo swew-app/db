@@ -1,8 +1,8 @@
 # SWEW/db
 
-Simplest Migration and SqlModel tool
+Simple SQL model and query tool
 
-The **swew/db** library is a lightweight and fast PHP library that provides an easy-to-use interface for creating and executing database migrations, as well as interacting with the database through queries. It's designed to protect against SQL injection attacks by using parameter binding and other security measures.
+The **swew/db** library is a lightweight and fast PHP library that provides an easy-to-use interface for interacting with databases through SQL models and queries. It's designed to protect against SQL injection attacks by using parameter binding and other security measures.
 
 PHP - should be light and fast!!!
 
@@ -12,7 +12,7 @@ PHP - should be light and fast!!!
 
 > -   [swew/cli](https://packagist.org/packages/swew/cli) - A command-line interface program with formatting and text entry functions.
 > -   [swew/test](https://packagist.org/packages/swew/test) - A test framework that is designed to fix the fatal flaw of other test frameworks.
-> -   [swew/db](https://packagist.org/packages/swew/db) - A lightweight, fast, and secure PHP library for interacting with databases, creating migrations, and running queries.
+> -   [swew/db](https://packagist.org/packages/swew/db) - A lightweight, fast, and secure PHP library for SQL models and database queries.
 > -   [swew/dd](https://packagist.org/packages/swew/dd) - The simplest way to debug variables. As in Laravel.
 
 ---
@@ -32,55 +32,22 @@ use Swew\Db\ModelConfig;
 ModelConfig::init($dsn, $username, $password);
 ```
 
-# Migration
+## Development
 
-```php
-<?php
-
-// Migration file
-use Swew\Db\{Migrate,Migrator};
-
-Migrate::up(function (Migrator $table) {
-    $table->tableCreate('users');
-    $table->id();
-    $table->string('name')->unique();
-    $table->string('login', 64)->unique()->index();
-    $table->string('password', 64)->default('123456');
-    $table->text('description')->fulltext();
-    $table->integer('rating')->nullable();
-
-    // $table->softDeletable(); // If need
-    $table->timestamps();
-});
-
-Migrate::down(function (Migrator $table) {
-    $table->tableDrop('users');
-});
+```sh
+composer install
+composer test        # Run tests
+composer check       # Mago analysis, linting, and formatting check (src/)
+composer format      # Apply Mago formatting
 ```
 
-## Run migration
+Mago targets PHP 8.3; configuration is in `mago.toml`.
+Composer checks show errors only; advisory diagnostics remain available with:
 
-```php
-<?php
-
-use Swew\Db\{Migrate,ModelConfig};
-
-// path to autoload file
-require __DIR__ . '/../vendor/autoload.php';
-
-// PDO connection
-$pdo = new PDO('sqlite:' . __DIR__ . '/database.sqlite');
-ModelConfig::setPDO($pdo);
-
-// "**" - is alias for sub folders
-$filePattern = __DIR__ . '/migrations/**.php';
-// Run "UP" migrations
-$isUpMigration = true;
-
-Migrate::run($filePattern, $isUpMigration);
+```sh
+vendor/bin/mago analyze
+vendor/bin/mago lint
 ```
-
----
 
 # DataBase queries
 

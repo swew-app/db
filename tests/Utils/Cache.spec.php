@@ -59,6 +59,15 @@ it('Cache [store,get]', function () {
     expect($res)->toBe($data);
 });
 
+it('Cache [malformed entries are cache misses]', function () {
+    $cache = new MemoryCache();
+    foreach (['invalid', [], ['data' => 123], ['expired' => 0]] as $item) {
+        $cache->set('malformed', $item);
+        expect(Cache::get($cache, 'malformed'))->toBe(null);
+    }
+    expect(fn () => Cache::getItemValue(['data' => 123]))->toThrow(LogicException::class);
+});
+
 it('Cache [remember]', function () {
     $data = 'SomeData';
     $cache = new MemoryCache();

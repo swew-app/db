@@ -6,11 +6,9 @@ namespace Swew\Db\Utils;
 
 final class Obj
 {
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    public static function getObjectVars(mixed $object): array
+    public static function getObjectVars(object $object): array
     {
         return get_object_vars($object);
     }

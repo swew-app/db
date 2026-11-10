@@ -6,16 +6,17 @@ namespace Swew\Db;
 
 use LogicException;
 use PDO;
-use Psr\SimpleCache\CacheInterface;
+use Swew\Db\Lib\Model\CacheConfig;
 
 final class ModelConfig
 {
-    private function __construct()
-    {
-    }
+    use CacheConfig;
+
+    private function __construct() {}
 
     private static ?PDO $pdo = null;
 
+    /** @var array<int, mixed> */
     private static array $options = [
         PDO::ATTR_EMULATE_PREPARES => 0,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -28,8 +29,13 @@ final class ModelConfig
     /**
      * @param  string  $dsn 'pgsql:host=localhost;port=5432;dbname=testdb'
      */
-    public static function init(string $dsn, ?string $username = null, ?string $password = null, array $options = []): void
-    {
+    public static function init(
+        string $dsn,
+        ?string $username = null,
+        #[\SensitiveParameter]
+        ?string $password = null,
+        array $options = [],
+    ): void {
         $pdo = new PDO($dsn, $username, $password, $options + self::$options);
 
         self::setPDO($pdo, false);
@@ -37,7 +43,7 @@ final class ModelConfig
 
     public static function setPDO(PDO $pdo, bool $useConfigOptions = true): bool
     {
-        if (! is_null(self::$pdo)) {
+        if (!is_null(self::$pdo)) {
             return false;
         }
 
@@ -66,30 +72,6 @@ final class ModelConfig
         self::$pdo = null;
     }
 
-    private static ?CacheInterface $defaultCache = null;
-
-    public static function hasDefaultCache(): bool
-    {
-        return (bool) self::$defaultCache;
-    }
-
-    public static function setDefaultCache(CacheInterface $defaultCache): void
-    {
-        if (self::$defaultCache) {
-            throw new LogicException('Cache already exists');
-        }
-        self::$defaultCache = $defaultCache;
-    }
-
-    public static function getDefaultCache(): CacheInterface
-    {
-        if (is_null(self::$defaultCache)) {
-            throw new LogicException('Cache is not exists');
-        }
-
-        return self::$defaultCache;
-    }
-
     private static string $tablePrefix = '';
 
     public static function setTablePrefix(string $tablePrefix): void
@@ -102,11 +84,13 @@ final class ModelConfig
         return self::$tablePrefix;
     }
 
+    /** @return array<int, mixed> */
     public static function getOptions(): array
     {
         return self::$options;
     }
 
+    /** @param array<int, mixed> $options */
     public static function setOptions(array $options): void
     {
         self::$options = $options;

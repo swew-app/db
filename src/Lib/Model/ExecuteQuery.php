@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Swew\Db\Lib\Model;
 
-use LogicException;
 use PDO;
 use PDOStatement;
 use Psr\SimpleCache\CacheInterface;
@@ -14,12 +13,22 @@ use Swew\Db\Utils\Obj;
 
 class ExecuteQuery
 {
+    use QueryBatch;
+    use QueryFilters;
+    use QueryModifiers;
+    use QueryResults;
+
     private PDOStatement $sth;
 
     private array $data = [];
 
     private bool $isDone = false;
 
+    private QueryConditions $conditions;
+
+    private QueryOptions $options;
+
+    /** @var array{hasCache: bool, key: string, expiredSeconds: int} */
     private array $cacheConfig = [
         'hasCache' => false,
         'key' => '',
@@ -27,11 +36,20 @@ class ExecuteQuery
     ];
 
     public function __construct(
-        readonly private PDO $pdo,
+        private readonly PDO $pdo,
         private string $sql,
-        readonly private Model $model,
-        readonly private ?CacheInterface $cache = null
-    ) {}
+        private readonly Model $model,
+        private readonly ?CacheInterface $cache = null,
+    ) {
+        $this->conditions = new QueryConditions();
+        $this->options = new QueryOptions();
+    }
+
+    public function __clone(): void
+    {
+        $this->conditions = clone $this->conditions;
+        $this->options = clone $this->options;
+    }
 
     public function id(): mixed
     {
@@ -50,40 +68,6 @@ class ExecuteQuery
         return $this;
     }
 
-    public function execMany(?array $data = null): bool
-    {
-        ['sql' => $sql] = $this->toSql([]);
-        $started = false;
-
-        try {
-            $started = $this->pdo->beginTransaction();
-            $sth = $this->pdo->prepare($sql);
-
-            foreach ($data ?? $this->data as $value) {
-                ['data' => $bindings] = $this->toSql($this->model->castSetValues($value));
-                if (isset($previousBindings) && (array_diff_key($bindings, $previousBindings) || array_diff_key($previousBindings, $bindings))) {
-                    throw new LogicException('Batch rows must have the same parameters');
-                }
-                $previousBindings = $bindings;
-                $this->bindValues($sth, $bindings);
-
-                if (! $sth->execute()) {
-                    throw new \PDOException($sth->errorInfo()[2]);
-                }
-            }
-
-            $this->pdo->commit();
-
-            return true;
-        } catch (\Throwable $e) {
-            if ($started && $this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-
-            return false;
-        }
-    }
-
     public function setData(array|Model $data): self
     {
         if ($data instanceof Model) {
@@ -95,333 +79,12 @@ class ExecuteQuery
         return $this;
     }
 
-    public function getMap(callable $fn): array|bool
-    {
-        $res = $this->get();
-
-        if (is_bool($res)) {
-            return $res;
-        }
-
-        return array_map($fn, $res);
-    }
-
-    public function get(): array|bool
-    {
-        $self = $this;
-
-        $callback = function () use (&$self) {
-            $self->prepareAndExecute();
-
-            return $self->sth->fetchAll(PDO::FETCH_ASSOC);
-        };
-
-        if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
-            $this->createCacheKey('all');
-
-            $results = Cache::remember(
-                $this->cache,
-                $this->cacheConfig['key'],
-                $callback,
-                $this->cacheConfig['expiredSeconds']
-            );
-        } else {
-            $results = $callback();
-        }
-
-        return array_map(
-            fn(mixed $v) => $this->model->castValues($v),
-            $results
-        );
-    }
-
-    public function getFirst(): array|bool
-    {
-        $this->limit(1);
-        $self = $this;
-
-        $callback = function () use (&$self) {
-            $self->prepareAndExecute();
-
-            // TODO: получать из модели
-            return $self->sth->fetch(PDO::FETCH_ASSOC);
-        };
-
-        if ($this->cacheConfig['hasCache'] && ! is_null($this->cache)) {
-            $this->createCacheKey('first');
-
-            $result = Cache::remember(
-                $this->cache,
-                $this->cacheConfig['key'],
-                $callback,
-                $this->cacheConfig['expiredSeconds']
-            );
-        } else {
-            $result = $callback();
-        }
-
-        if (! $result) {
-            return false;
-        }
-
-        return $this->model->castValues($result);
-    }
-
-    public function getFirstItem(): ?Model
-    {
-        $result = $this->getFirst();
-
-        if (! is_array($result)) {
-            return null;
-        }
-
-        return $this->fillDto($result);
-    }
-
-    public function getItems(): array
-    {
-        $results = $this->get();
-
-        if (! is_array($results)) {
-            throw new LogicException('Wrong query for get result');
-        }
-
-        return array_map(
-            fn($data) => $this->fillDto($data),
-            $results
-        );
-    }
-
-    public function getValue(?string $key = null): mixed
-    {
-        $result = $this->getFirst();
-
-        if (! is_array($result)) {
-            return null;
-        }
-
-        if (! is_null($key)) {
-            return $result[$key];
-        }
-
-        return array_values($result)[0];
-    }
-
-    public function toSql(?array $data = null): array
-    {
-        $data = $data ?? $this->data;
-        $sql = $this->sql;
-        $where = [];
-        $orWhere = [];
-
-        if (count($this->where) > 0) {
-            foreach ($this->where as $v) {
-                $where[] = $v[0];
-                if (array_key_exists(1, $v)) {
-                    $data[] = $v[1];
-                }
-            }
-        }
-
-        if (count($this->orWhere) > 0) {
-            foreach ($this->orWhere as $v) {
-                $orWhere[] = $v[0];
-                if (array_key_exists(1, $v)) {
-                    $data[] = $v[1];
-                }
-            }
-
-            $where[] = '(' . implode(' OR ', $orWhere) . ')';
-        }
-
-        if (count($this->whereIn) > 0) {
-            foreach ($this->whereIn as $v) {
-                $valuePlaces = array_fill(0, count($v[1]), '?');
-                $valuePlaces = implode(', ', $valuePlaces);
-                $where[] = $v[1] === [] ? '0 = 1' : "`{$v[0]}` IN ($valuePlaces)";
-
-                foreach ($v[1] as $val) {
-                    $data[] = $val;
-                }
-            }
-        }
-
-        if (count($this->whereNotIn) > 0) {
-            foreach ($this->whereNotIn as $v) {
-                $valuePlaces = array_fill(0, count($v[1]), '?');
-                $valuePlaces = implode(', ', $valuePlaces);
-                $where[] = "`{$v[0]}` NOT IN ($valuePlaces)";
-
-                foreach ($v[1] as $val) {
-                    $data[] = $val;
-                }
-            }
-        }
-
-        if (count($where) > 0) {
-            $where = [
-                implode(' AND ', $where),
-            ];
-
-            $sql .= ' WHERE (' . implode(' AND ', $where) . ')';
-        }
-
-        if (count($this->groupBy) > 0) {
-            $sql .= ' GROUP BY ' . implode(', ', $this->groupBy);
-        }
-
-        if (count($this->orderBy) > 0) {
-            $sql .= ' ORDER BY ' . implode(', ', $this->orderBy);
-        }
-
-        if ($this->limit > 0) {
-            if ($this->offset > 0) {
-                $sql .= ' LIMIT ' . $this->offset . ', ' . $this->limit;
-            } else {
-                $sql .= ' LIMIT ' . $this->limit;
-            }
-        }
-
-        return [
-            'sql' => $sql,
-            'data' => $data,
-        ];
-    }
-
-    // region [where]
-
-    private array $where = [];
-
-    private array $orWhere = [];
-
-    private array $whereIn = [];
-
-    private array $whereNotIn = [];
-
-    public function where(): self
-    {
-        $args = func_get_args();
-
-        $this->where[] = $this->whereQuery($args);
-
-        return $this;
-    }
-
-    public function orWhere(): self
-    {
-        $args = func_get_args();
-
-        $this->orWhere[] = $this->whereQuery($args);
-
-        return $this;
-    }
-
-    public function whereIn(string $key, array $values): self
-    {
-        $this->whereIn[] = [$key, $values];
-
-        return $this;
-    }
-
-    public function whereNotIn(string $key, array $values): self
-    {
-        if (count($values) === 0) {
-            return $this;
-        }
-        $this->whereNotIn[] = [$key, $values];
-
-        return $this;
-    }
-
-    private function whereQuery(array $args): array
-    {
-        $key = '';
-        $comp = '=';
-        $val = '';
-        $count = count($args);
-
-        if ($count === 2) {
-            $key = $args[0];
-            $val = $args[1];
-        } elseif ($count === 3) {
-            $key = $args[0];
-            $comp = $args[1];
-            $val = $args[2];
-        } else {
-            throw new \LogicException('Wrong parameters');
-        }
-
-        $val = $this->model->castSetValue($key, $val);
-
-        $comp = strtoupper(trim($comp));
-        if (! in_array($comp, ['=', '!=', '<>', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'IS', 'IS NOT'], true)) {
-            throw new LogicException('Invalid comparison operator');
-        }
-
-        if (is_null($val)) {
-            $comp = match ($comp) {
-                '=', 'IS' => 'IS NULL',
-                '!=', '<>', 'IS NOT' => 'IS NOT NULL',
-                default => throw new LogicException('Invalid NULL comparison'),
-            };
-
-            return ["`$key` $comp"];
-        }
-
-        return ["`$key` $comp ?", $val];
-    }
-    // endregion
-
-    private int $limit = 0;
-
-    public function limit(int $limit, int $offset = 0): self
-    {
-        $this->limit = $limit;
-
-        if ($offset > 0) {
-            $this->offset($offset);
-        }
-
-        return $this;
-    }
-
-    private int $offset = 0;
-
-    public function offset(int $offset): self
-    {
-        $this->offset = $offset;
-
-        return $this;
-    }
-
-    private array $orderBy = [];
-
-    public function orderBy(string $key, string $direction = 'ASC'): self
-    {
-        if (! in_array($direction, ['ASC', 'DESC'])) {
-            throw new LogicException('Wrong orderBy direction, use ASC or DESC');
-        }
-
-        $this->orderBy[] = "`$key` $direction";
-
-        return $this;
-    }
-
-    private array $groupBy = [];
-
-    public function groupBy(string $key): self
-    {
-        $this->groupBy[] = "`$key`";
-
-        return $this;
-    }
-
     private function fillDto(array $value): Model
     {
         $model = clone $this->model;
 
         foreach ($value as $key => $val) {
-            if (property_exists($model, $key)) {
+            if (is_string($key) && property_exists($model, $key)) {
                 $model->$key = $val;
             }
         }
@@ -436,10 +99,7 @@ class ExecuteQuery
         $sth = $this->pdo->prepare($sql);
 
         if ($sth === false) {
-            throw new \Exception(
-                'PDO prepare exception: ' . $this->pdo->errorInfo()[2],
-                $this->pdo->errorInfo()[1],
-            );
+            throw new \Exception('PDO prepare exception: ' . $this->pdo->errorInfo()[2], $this->pdo->errorInfo()[1]);
         }
 
         $this->sth = $sth;
@@ -455,36 +115,24 @@ class ExecuteQuery
     private function bindValues(PDOStatement $statement, array $bindings): void
     {
         foreach ($bindings as $key => $value) {
-            $statement->bindValue(
-                is_string($key) ? $key : $key + 1,
-                $value,
-                match (true) {
-                    is_null($value) => PDO::PARAM_NULL,
-                    is_bool($value) => PDO::PARAM_BOOL,
-                    is_int($value) => PDO::PARAM_INT,
-                    is_resource($value) => PDO::PARAM_LOB,
-                    default => PDO::PARAM_STR
-                },
-            );
+            $statement->bindValue(is_string($key) ? $key : $key + 1, $value, match (true) {
+                is_null($value) => PDO::PARAM_NULL,
+                is_bool($value) => PDO::PARAM_BOOL,
+                is_int($value) => PDO::PARAM_INT,
+                is_resource($value) => PDO::PARAM_LOB,
+                default => PDO::PARAM_STR,
+            });
         }
     }
 
-    private function createCacheKey(string $fetchMode): string
+    private function fetchCached(string $fetchMode, callable $callback): mixed
     {
-        ['sql' => $sql, 'data' => $castedData] = $this->toSql($this->data);
-
-        return $this->cacheConfig['key'] = Cache::makeKey($sql, $castedData, $fetchMode);
-    }
-
-    public function cache(int $seconds = 0): self
-    {
-        if (is_null($this->cache)) {
-            throw new LogicException('Set getCache method in "' . get_class($this->model) . '"');
+        $cache = $this->cache;
+        if ($this->cacheConfig['hasCache'] && $cache !== null) {
+            ['sql' => $sql, 'data' => $data] = $this->toSql($this->data);
+            $this->cacheConfig['key'] = Cache::makeKey($sql, $data, $fetchMode);
+            return Cache::remember($cache, $this->cacheConfig['key'], $callback, $this->cacheConfig['expiredSeconds']);
         }
-
-        $this->cacheConfig['expiredSeconds'] = $seconds;
-        $this->cacheConfig['hasCache'] = true;
-
-        return $this;
+        return $callback();
     }
 }

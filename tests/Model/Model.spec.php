@@ -449,6 +449,15 @@ it('Model [execMany filters and rollback]', function () {
     expect($model->count()->getValue())->toBe(2);
 });
 
+it('Model [invalid query inputs]', function () {
+    $model = UserModel::vm();
+    $model->setCurrentQueryPDO(getPDO(true));
+    expect(fn () => $model->select()->where(123, 'value'))->toThrow(LogicException::class);
+    expect(fn () => $model->select()->where('id', 123, 1))->toThrow(LogicException::class);
+    expect($model->query(UserModel::ADD_USER)->execMany(['invalid row']))->toBe(false);
+    expect($model->count()->getValue())->toBe(0);
+});
+
 it('Model [PDO options keep numeric attribute keys]', function () {
     $pdo = ModelConfig::getPDO();
     ModelConfig::removePDO();
